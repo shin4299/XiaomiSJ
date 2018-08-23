@@ -60,16 +60,16 @@ metadata {
 			state "default", label: '', action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/29/624555_refresh_256x256.png"
 		}        
         valueTile("power", "device.power", width:4, height:2, inactiveLabel: false, decoration: "flat" ) {
-        	state "power", label: '현재전력 ${currentValue}W', action: "power", defaultState: true
+        	state "power", label: 'Power ${currentValue}W', action: "power", defaultState: true
 		}
         valueTile("Volt", "device.volt", width:2, height:2, inactiveLabel: false, decoration: "flat" ) {
-        	state "volt", label: '현재전압\n${currentValue}V', action: "volt", defaultState: true
+        	state "volt", label: 'Volt\n${currentValue}V', action: "volt", defaultState: true
 		}        
         valueTile("energy", "device.energy", width:2, height:2, inactiveLabel: false, decoration: "flat" ) {
-        	state "energy", label: '누적전력\n${currentValue}KWh', action: "energy", defaultState: true
+        	state "energy", label: 'Energy\n${currentValue}KWh', action: "energy", defaultState: true
 		}
         valueTile("Temp", "device.temp", width:2, height:2, inactiveLabel: false, decoration: "flat" ) {
-        	state "temp", label: '현재온도\n${currentValue}°C', action: "temp", defaultState: true
+        	state "temp", label: 'Temp\n${currentValue}°C', action: "temp", defaultState: true
 		}
 
 		main "switch"
