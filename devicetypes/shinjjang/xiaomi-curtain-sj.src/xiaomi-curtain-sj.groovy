@@ -12,7 +12,7 @@
  */
 
 metadata {
-    definition(name: "Xiaomi Curtain SJ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind") {
+    definition(name: "Xiaomi Curtain SJ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.light", vid: "generic-dimmer", mnmn: "SmartThings") {
 		capability "Switch Level"
 		capability "Actuator"
 		capability "Health Check"
