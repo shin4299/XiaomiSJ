@@ -12,7 +12,7 @@
  */
 
 metadata {
-    definition(name: "Xiaomi Curtain SJ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.light", vid: "generic-dimmer", mnmn: "SmartThings") {
+    definition(name: "Xiaomi Curtain SJ", namespace: "ShinJjang", author: "ShinJjang", vid: "SmartThings-smartthings-Z-Wave_Window_Shade", ocfDeviceType: "oic.d.blind") {
 		capability "Switch Level"
 		capability "Actuator"
 		capability "Health Check"
@@ -31,6 +31,10 @@ metadata {
     }
 
     command "levelOpenClose"
+    command "stop"
+    command "stop1"
+    command "stop2"
+    command "stop3"
     
     preferences {
     		input name: "mode", type: "bool", title: "Xiaomi Curtain Direction Set", description: "Reverse Mode ON", required: true,
@@ -46,7 +50,7 @@ metadata {
                 attributeState "turningOff", label:'${name}', action:"switch.on", icon:"st.switches.light.off", backgroundColor:"#ffffff", nextState:"turningOn"
             }
             tileAttribute ("device.level", key: "SLIDER_CONTROL") {
-                attributeState "level", action:"switch level.setLevel"
+                attributeState "level", action:"setLevel"
             }
         }
 
@@ -65,32 +69,35 @@ metadata {
                 attributeState("partially open", label: 'partially\nopen', action: "windowShade.close", icon: "st.doors.garage.garage-closing", backgroundColor: "#D4ACEE", nextState: "closing")
             }
             tileAttribute("device.level", key: "SLIDER_CONTROL") {
-                attributeState("level", action: "switch level.setLevel")
+                attributeState("level", action: "setLevel")
             }
         }
                
         
-//        standardTile("switch", "device.switch") {
-//            state("on", label: 'open', action: "switch.off", icon: "st.doors.garage.garage-open", backgroundColor: "#ffcc33")
-//            state("off", label: 'closed', action: "switch.on", icon: "st.doors.garage.garage-closed", backgroundColor: "#bbbbdd")
-//        }
         standardTile("open", "open", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state("open", label: 'open', action: "windowShade.open", icon: "st.contact.contact.open")
         }
         standardTile("close", "close", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state("close", label: 'close', action: "windowShade.close", icon: "st.contact.contact.closed")
         }
+        standardTile("stop", "stop", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+            state("stop", label: 'stop', action: "stop", icon: "st.illuminance.illuminance.dark")
+        }
+        standardTile("stop1", "stop1", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+            state("stop", label: 'stop', action: "stop1", icon: "st.contact.contact.closed")
+        }
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
         }
         main(["windowShade"])
-        details(["windowShade", "open", "refresh", "close", "level"])
+        details(["windowShade", "open", "stop", "close", "refresh", "level"])
     }
 }
 
 // Parse incoming device messages to generate events
 def parse(String description) {
     def parseMap = zigbee.parseDescriptionAsMap(description)
+            log.debug "parseMap11:${parseMap}"    
     def event = zigbee.getEvent(description)
 
     try {
@@ -204,6 +211,22 @@ def on() {
     }
 }
 
+def stop() {
+    log.debug "stop()"
+    delayBetween([
+	zigbee.command(0x0102, 0x02),
+    zigbee.readAttribute(0x000d, 0x0055)
+	], 500)
+//    runIn(1, refresh)
+}
+/*
+def stop1() {
+    log.debug "stop1()"
+//     zigbee.readAttribute(0x0102, 0x01)
+//	zigbee.writeAttribute(0x0102, 0x01)
+           	 	zigbee.command(0x0102, 0x03)
+}
+*/
 def setLevel(level) {
 	if(mode == true){
     	if(level == 100) {
