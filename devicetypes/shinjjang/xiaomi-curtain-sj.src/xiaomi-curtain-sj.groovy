@@ -18,8 +18,9 @@ metadata {
       capability "Health Check"
       capability "Switch"
       capability "Refresh"
-        capability "Window Shade" 
+      capability "Window Shade" 
        
+      attribute "Window Shade", "enum", ["open", "close", "stop"]        
 
         fingerprint endpointId: "0x01", profileId: "0104", deviceId: "0202", inClusters: "0000, 0004, 0003, 0005, 000A, 0102, 000D, 0013, 0006, 0001, 0406", outClusters: "0019, 000A, 000D, 0102, 0013, 0006, 0001, 0406"
 
