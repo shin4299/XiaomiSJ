@@ -173,7 +173,7 @@ def setLevel(level) {
        if(level == 100) {
             log.debug "Set Close"
             zigbee.command(0x0006, 0x00)
-        } else if(level == 0) {
+        } else if(level < 1) {
            log.debug "Set Open"
               zigbee.command(0x0006, 0x01)
         } else {
@@ -183,16 +183,16 @@ def setLevel(level) {
            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
        }  
     } else{
-       if(level == 0) {
-            log.debug "Set Close"
-            zigbee.command(0x0006, 0x00)
-        } else if (level == 100){
+       if (level == 100){
             log.debug "Set Open"
             zigbee.command(0x0006, 0x01)
-        } else {
+        } else if(level > 0) {
             log.debug "Set Level: ${level}%"
             String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
             zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
+        } else {
+            log.debug "Set Close"
+            zigbee.command(0x0006, 0x00)
         } 
     }
 }
