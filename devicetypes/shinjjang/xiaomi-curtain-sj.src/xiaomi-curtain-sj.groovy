@@ -169,6 +169,7 @@ def stop() {
 }
 
 def setLevel(level) {
+    level = level as int
    if(mode == true){
        if(level == 100) {
             log.debug "Set Close"
