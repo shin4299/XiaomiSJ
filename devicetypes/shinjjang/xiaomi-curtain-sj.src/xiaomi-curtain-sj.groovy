@@ -31,13 +31,6 @@ metadata {
     command "shadeAction"
 
     command "stop"
-    command "stop1"
-
-    command "stop2"
-
-    command "stop3"
-
-    command "stop4"
     
     preferences {
           input name: "mode", type: "bool", title: "Xiaomi Curtain Direction Set", description: "Reverse Mode ON", required: true,
@@ -66,26 +59,11 @@ metadata {
         standardTile("stop", "stop", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state("stop", label: 'stop', action: "stop", icon: "st.illuminance.illuminance.dark")
         }
-        standardTile("stop1", "stop1", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-            state("stop", label: 'test', action: "stop1", icon: "st.illuminance.illuminance.dark")
-        }
-        standardTile("stop2", "stop2", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-            state("stop", label: 'test2', action: "stop2", icon: "st.illuminance.illuminance.dark")
-        }
-
-        standardTile("stop3", "stop3", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-            state("stop", label: 'test3', action: "stop3", icon: "st.illuminance.illuminance.dark")
-        }
-
-        standardTile("stop4", "stop4", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-            state("stop", label: 'test4', action: "stop4", icon: "st.illuminance.illuminance.dark")
-        }
-
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
         }
         main(["windowShade"])
-        details(["windowShade", "open", "stop", "close", "refresh", "stop1", "stop2", "stop3", "stop4"])
+        details(["windowShade", "open", "stop", "close", "refresh"])
     }
 }
 
@@ -192,26 +170,7 @@ def stop() {
    ], 500)
 //    runIn(1, refresh)
 }
-def stop1() {
-    log.debug "stop()"
-    zigbee.command(0x0102, 0x07)
-//    runIn(1, refresh)
-}
-def stop2() {
-    log.debug "stop()"
-    zigbee.command(0x0102, 0x08)
-//    runIn(1, refresh)
-}
-def stop3() {
-    log.debug "stop()"
-    zigbee.command(0x0102, 0x04)
-//    runIn(1, refresh)
-}
-def stop4() {
-    log.debug "stop()"
-    zigbee.command(0x0102, 0x05)
-//    runIn(1, refresh)
-}
+
 def setLevel(level) {
     if (level == null) {level = 0}
     level = level as int
