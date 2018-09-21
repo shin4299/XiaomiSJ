@@ -19,16 +19,26 @@ metadata {
       capability "Switch"
       capability "Refresh"
       capability "Window Shade" 
-       
+      
       attribute "Window Shade", "enum", ["open", "close", "stop"]        
+       
 
         fingerprint endpointId: "0x01", profileId: "0104", deviceId: "0202", inClusters: "0000, 0004, 0003, 0005, 000A, 0102, 000D, 0013, 0006, 0001, 0406", outClusters: "0019, 000A, 000D, 0102, 0013, 0006, 0001, 0406"
 
     }
 
     command "levelOpenClose"
+    command "shadeAction"
+
     command "stop"
-   
+    command "stop1"
+
+    command "stop2"
+
+    command "stop3"
+
+    command "stop4"
+    
     preferences {
           input name: "mode", type: "bool", title: "Xiaomi Curtain Direction Set", description: "Reverse Mode ON", required: true,
              displayDuringSetup: true
@@ -56,11 +66,26 @@ metadata {
         standardTile("stop", "stop", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state("stop", label: 'stop', action: "stop", icon: "st.illuminance.illuminance.dark")
         }
+        standardTile("stop1", "stop1", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+            state("stop", label: 'test', action: "stop1", icon: "st.illuminance.illuminance.dark")
+        }
+        standardTile("stop2", "stop2", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+            state("stop", label: 'test2', action: "stop2", icon: "st.illuminance.illuminance.dark")
+        }
+
+        standardTile("stop3", "stop3", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+            state("stop", label: 'test3', action: "stop3", icon: "st.illuminance.illuminance.dark")
+        }
+
+        standardTile("stop4", "stop4", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
+            state("stop", label: 'test4', action: "stop4", icon: "st.illuminance.illuminance.dark")
+        }
+
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
         }
         main(["windowShade"])
-        details(["windowShade", "open", "stop", "close", "refresh", "level"])
+        details(["windowShade", "open", "stop", "close", "refresh", "stop1", "stop2", "stop3", "stop4"])
     }
 }
 
@@ -167,9 +192,30 @@ def stop() {
    ], 500)
 //    runIn(1, refresh)
 }
-
+def stop1() {
+    log.debug "stop()"
+    zigbee.command(0x0102, 0x07)
+//    runIn(1, refresh)
+}
+def stop2() {
+    log.debug "stop()"
+    zigbee.command(0x0102, 0x08)
+//    runIn(1, refresh)
+}
+def stop3() {
+    log.debug "stop()"
+    zigbee.command(0x0102, 0x04)
+//    runIn(1, refresh)
+}
+def stop4() {
+    log.debug "stop()"
+    zigbee.command(0x0102, 0x05)
+//    runIn(1, refresh)
+}
 def setLevel(level) {
+    if (level == null) {level = 0}
     level = level as int
+    
    if(mode == true){
        if(level == 100) {
             log.debug "Set Close"
@@ -198,6 +244,34 @@ def setLevel(level) {
     }
 }
 
+def shadeAction(level) {
+   if(mode == true){
+       if(level == 100) {
+            log.debug "Set Close"
+            zigbee.command(0x0006, 0x00)
+        } else if(level < 1) {
+           log.debug "Set Open"
+              zigbee.command(0x0006, 0x01)
+        } else {
+           log.debug "Set Level: ${level}%"
+            def f = 100 - level
+           String hex = Integer.toHexString(Float.floatToIntBits(f)).toUpperCase()
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
+       }  
+    } else{
+       if (level == 100){
+            log.debug "Set Open"
+            zigbee.command(0x0006, 0x01)
+        } else if(level > 0) {
+            log.debug "Set Level: ${level}%"
+            String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
+            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
+        } else {
+            log.debug "Set Close"
+            zigbee.command(0x0006, 0x00)
+        } 
+    }
+}
 def refresh() {
     log.debug "refresh()"
 //    "st rattr 0x${device.deviceNetworkId} ${1} 0x000d 0x0055"
