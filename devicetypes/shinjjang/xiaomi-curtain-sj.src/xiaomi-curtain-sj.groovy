@@ -135,21 +135,11 @@ def parse(String description) {
 
 
 def close() {
-    log.debug "Set Close"
-   if(mode == true){
-       setLevel(100)
-    } else {
        setLevel(0)
-    }
 }
 
 def open() {
-    log.debug "Set Open"
-   if(mode == true){
-       setLevel(0)
-    } else {
        setLevel(100)
-    }
 }
 
 def off() {
