@@ -39,7 +39,9 @@ metadata {
 		reply "zcl on-off off": "on/off: 0"
 	}
     
-
+	preferences {
+		input name: "make", type: "bool", title: "2,3구 스위치 만들기"
+}
 	tiles(scale: 2) {
 		multiAttributeTile(name: "switch", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
 			tileAttribute("device.switch", key: "PRIMARY_CONTROL") {
@@ -58,9 +60,19 @@ metadata {
 }
 
 def installed() {
-	createChildDevices()
-	updateDataValue("onOff", "catchall")
+		createChildDevices()
+		updateDataValue("onOff", "catchall")
 }
+
+def updated() {
+	if(make){
+		createChildDevices()
+		updateDataValue("onOff", "catchall")
+        device.updateSetting("make", false)
+
+    }
+}
+
 
 def parse(String description) {
 	log.debug "description is $description"
