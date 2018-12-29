@@ -86,7 +86,7 @@ def parse(String description) {
             log.debug "descMapEP=${ep}"
             log.debug "parse Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
 
-            if (state.ins == 0) {
+            if (state.ins == 0 || state.ins == null ) {
                 if (state.ch < ep) {
                     state.ch = ep
                     log.debug "search Channel=${state.ch}"
