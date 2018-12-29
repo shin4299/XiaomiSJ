@@ -68,8 +68,6 @@ def installed() {
     state.sep = 0
     log.debug "install Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
     updateDataValue("onOff", "catchall")
-//    sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
-//	healthPoll()
 }
 
 def parse(String description) {
@@ -84,7 +82,6 @@ def parse(String description) {
             log.debug "$descMap"
             def ep = descMap.sourceEndpoint as int
             log.debug "descMapEP=${ep}"
-            log.debug "parse Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
 
             if (state.ins == 0 || state.ins == null ) {
                 if (state.ch < ep) {
