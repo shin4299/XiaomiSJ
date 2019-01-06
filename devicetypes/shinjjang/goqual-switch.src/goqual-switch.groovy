@@ -159,6 +159,7 @@ def ping() {
 }
 
 def refresh() {
+	state.ins = 1
     return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: 0xFF])
 }
 
