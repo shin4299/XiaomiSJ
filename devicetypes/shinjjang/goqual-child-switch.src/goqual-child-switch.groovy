@@ -16,6 +16,8 @@ metadata {
 		capability "Switch"
 		capability "Actuator"
 		capability "Sensor"
+		capability "Refresh"
+		capability "Configuration"
 		capability "Health Check"
 	}
 
@@ -28,9 +30,12 @@ metadata {
 				attributeState "turningOff", label: '${name}', action: "switch.on", icon: "st.switches.light.off", backgroundColor: "#ffffff", nextState: "turningOn"
 			}
 		}
+        standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
+        }
 
 		main "switch"
-		details(["switch"])
+		details(["switch", "refresh"])
 	}
 }
 
@@ -40,15 +45,23 @@ def installed() {
 }
 
 void on() {
+   log.debug("on")
 	parent.childOn(device.deviceNetworkId)
 }
 
 void off() {
+   log.debug("off")
 	parent.childOff(device.deviceNetworkId)
 }
 
 def ping() {
-	// Intentionally left blank as parent should handle this
+   log.debug("ping")
+	parent.childRefresh(device.deviceNetworkId)
+}
+
+def refresh() {
+   log.debug("refresh")
+	parent.childRefresh(device.deviceNetworkId)
 }
 
 def uninstalled() {

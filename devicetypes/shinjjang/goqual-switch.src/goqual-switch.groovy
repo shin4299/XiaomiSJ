@@ -25,12 +25,8 @@ metadata {
 
         command "childOn", ["string"]
         command "childOff", ["string"]
-		command "refresh1"
-        command "refresh2"
-        command "refresh3"
-        command "refresh4"
-        command "refresh5"
-        command "refresh6"
+		command "childRefresh"
+
         fingerprint profileId: "0104", endpoint: "03", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
     }
     // simulator metadata
@@ -68,6 +64,8 @@ def installed() {
     state.sep = 0
     log.debug "install Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
     updateDataValue("onOff", "catchall")
+//    sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
+//	healthPoll()
 }
 
 def parse(String description) {
@@ -82,6 +80,7 @@ def parse(String description) {
             log.debug "$descMap"
             def ep = descMap.sourceEndpoint as int
             log.debug "descMapEP=${ep}"
+            log.debug "parse Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
 
             if (state.ins == 0 || state.ins == null ) {
                 if (state.ch < ep) {
@@ -161,6 +160,10 @@ def ping() {
 
 def refresh() {
     return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: 0xFF])
+}
+
+def childRefresh(String dni) {
+    return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: getChildEndpoint(dni)])
 }
 
 def poll() {
