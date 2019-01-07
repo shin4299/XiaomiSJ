@@ -119,6 +119,7 @@ def parse(String description) {
 
 
 private void createChildDevices() {
+	state.ins = 1
 	if (state.ch != 1) {
     	for (i in 2..state.ch) {
         	addChildDevice("GoQual Child Switch", "${device.deviceNetworkId}:0${i}", device.hubId,
@@ -159,7 +160,6 @@ def ping() {
 }
 
 def refresh() {
-	state.ins = 1
     return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: 0xFF])
 }
 
