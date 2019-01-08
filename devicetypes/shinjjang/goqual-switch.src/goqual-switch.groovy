@@ -55,7 +55,7 @@ metadata {
             state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
         }
         standardTile("state", "state", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "0", label: "Nok"
+            state "0", label: "NOK"
             state "1", label: "OK"
         }
         main "switch"
