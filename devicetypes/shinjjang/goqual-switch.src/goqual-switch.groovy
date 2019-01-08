@@ -39,8 +39,9 @@ metadata {
         reply "zcl on-off on": "on/off: 1"
         reply "zcl on-off off": "on/off: 0"
     }
-
-
+	preferences {
+		input name: "stateins", type: "bool", title: "스테이트 ins 값 변경", description:"NOTE: 설치후 차일드 디바이스가 Unavailable 될때, 또는 장치화면에 'NOK'가 뜨면 켜고 저장"
+        }
     tiles(scale: 2) {
         multiAttributeTile(name: "switch", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
             tileAttribute("device.switch", key: "PRIMARY_CONTROL") {
@@ -53,8 +54,12 @@ metadata {
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "default", label: "", action: "refresh.refresh", icon: "st.secondary.refresh"
         }
+        standardTile("state", "state", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "0", label: "Nok"
+            state "1", label: "OK"
+        }
         main "switch"
-        details(["switch", "refresh"])
+        details(["switch", "refresh", "state"])
     }
 }
 
@@ -66,6 +71,14 @@ def installed() {
     updateDataValue("onOff", "catchall")
 //    sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
 //	healthPoll()
+}
+
+def updated() {
+		if(stateins) {
+			state.ins = 1
+			device.updateSetting("stateins", false)
+		}
+    sendEvent(name: "state", value: state.ins, displayed: false)
 }
 
 def parse(String description) {
@@ -114,6 +127,7 @@ def parse(String description) {
             }
         }
     }
+    sendEvent(name: "state", value: state.ins, displayed: false)
 }
 
 
