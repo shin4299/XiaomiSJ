@@ -74,11 +74,12 @@ def installed() {
 }
 
 def updated() {
-		if(stateins) {
-			state.ins = 1
-			device.updateSetting("stateins", false)
-		}
-    sendEvent(name: "state", value: state.ins, displayed: false)
+	if(stateins) {
+		state.ins = 1
+		device.updateSetting("stateins", false)
+	}
+	sendEvent(name: "state", value: state.ins, displayed: false)
+	refresh()
 }
 
 def parse(String description) {
