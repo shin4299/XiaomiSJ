@@ -133,7 +133,6 @@ def parse(String description) {
 
 
 private void createChildDevices() {
-	state.ins = 1
 	if (state.ch != 1) {
     	for (i in 2..state.ch) {
         	addChildDevice("GoQual Child Switch", "${device.deviceNetworkId}:0${i}", device.hubId,
