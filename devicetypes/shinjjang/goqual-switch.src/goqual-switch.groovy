@@ -79,7 +79,6 @@ def updated() {
 		device.updateSetting("stateins", false)
 	}
 	sendEvent(name: "state", value: state.ins, displayed: false)
-	refresh()
 }
 
 def parse(String description) {
