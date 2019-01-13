@@ -45,13 +45,7 @@ LANGUAGE_MAP = [
 
 metadata {
 	definition (name: "Xiaomi Heater2", namespace: "fison67", author: "fison67") {
-        /*capability "Switch"						//"on", "off"
-        capability "Switch Level"
-        capability "Temperature Measurement"
-        capability "Relative Humidity Measurement"
-		capability "Refresh"
-		capability "Sensor"
-        */
+
 		capability "Actuator"
 		capability "Temperature Measurement"
 		capability "Thermostat"
@@ -68,8 +62,6 @@ metadata {
         attribute "buzzer", "enum", ["on", "off"]        
         attribute "ledBrightness", "enum", ["off", "dim", "bright"]
         attribute "lastCheckin", "Date"
-        attribute "1h", "enum", ["1", "0"]        
-        attribute "2h", "enum", ["2", "0"]        
 
 		command "Xiaomiheater"
 		command "lowerHeatingSetpoint"
@@ -83,10 +75,6 @@ metadata {
         command "setBright"
         command "setBrightDim"
         command "setBrightOff"         
-        command "timer1hOn"         
-        command "timer1hOff"         
-        command "timer2hOn"         
-        command "timer2hOff"         
 		command "settimer"        
         command "starttimer"
         command "stoptimer"
