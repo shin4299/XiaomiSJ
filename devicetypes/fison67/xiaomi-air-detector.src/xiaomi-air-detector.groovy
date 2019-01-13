@@ -154,11 +154,14 @@ metadata {
         valueTile("battery", "device.battery", width: 2, height: 2) {
             state("val", label:'${currentValue}%', defaultState: true, backgroundColor:"#00a0dc")
         }
+	standardTile("refresh", "device.thermostatMode") {
+		state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
+	}
         
 
         
         main (["fineDustLevel"])
-		details(["fineDustLevel", "tvoc", "carbonDioxide", "temperature", "humidity"])
+		details(["fineDustLevel", "tvoc", "carbonDioxide", "temperature", "humidity", "refresh"])
 		
 	}
 }
