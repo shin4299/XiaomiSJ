@@ -27,13 +27,12 @@ metadata {
         command "childOff", ["string"]
 		command "childRefresh"
 
+        fingerprint profileId: "0104", deviceId: "0100", endpoint: "01", inClusters: "0006, 0000, 0003", outClusters: "", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
+        fingerprint profileId: "0104", deviceId: "0100", endpoint: "02", inClusters: "0006, 0000, 0003", outClusters: "", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
+        fingerprint profileId: "0104", deviceId: "0100", endpoint: "03", inClusters: "0006, 0000, 0003", outClusters: "", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "01", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "02", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "03", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
-        
-        fingerprint profileId: "0104", deviceId: "0100", endpoint: "01", inClusters: "0006, 0000, 0003", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
-        fingerprint profileId: "0104", deviceId: "0100", endpoint: "02", inClusters: "0006, 0000, 0003", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
-        fingerprint profileId: "0104", deviceId: "0100", endpoint: "03", inClusters: "0006, 0000, 0003", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
     }
     // simulator metadata
     simulator {
