@@ -276,12 +276,18 @@ def setStatus(params){
     	sendEvent(name:"humidity", value: params.data )
     	break;
     case "mode":
+	state.mode = params.data	
     	sendEvent(name:"mode", value: "M"+params.data)
     	break;
     case "power":
-    	sendEvent(name:"switch", value: (params.data == 1 ? "on" : "off") )
-    	sendEvent(name:"mode", value: (params.data == 0 ? "off"))
-		
+    	if(params.data == 1) {
+    	sendEvent(name:"switch", value:"on")
+    	sendEvent(name:"mode", value:"M"+state.mode)		
+        }
+        else if(params.data == 0) {
+    		sendEvent(name:"mode", value: "off")
+	    	sendEvent(name:"switch", value:"off")
+        }
     	break;
     case "temperature":
 		def para = "${params.data}"
