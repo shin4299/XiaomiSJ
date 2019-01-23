@@ -70,7 +70,7 @@ metadata {
 		capability "Battery"
 
          
-        attribute "mode", "enum", ["auto", "silent", "medium", "hight"]
+        attribute "mode", "enum", ["auto", "level 1", "level 2", "level 3", "level 4"]
         attribute "buzzer", "enum", ["on", "off"]
         attribute "ledBrightness", "enum", ["off", "dim", "bright"]
         attribute "water2", "string"
@@ -113,10 +113,11 @@ metadata {
 		multiAttributeTile(name:"mode", type: "generic", width: 6, height: 4){
 			tileAttribute ("device.mode", key: "PRIMARY_CONTROL") {
                 attributeState "off", label:'\nOFF', action:"switch.on", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTQ2/MDAxNTIyMTUxNzIxMTk3.xeCR1k4pk0vDOozb43Lfo6g2fMC1a_VJFUpTQ071XRUg.dyhFTAUaCwWPUYc4hPUdGiuUI5yeRJ4QpP3kX802AlIg.PNG.shin4299/Humi_tile_off.png?type=w580", backgroundColor:"#ffffff", nextState:"turningOn"
-                attributeState "auto", label:'\nAuto Mode', action:"setModeSilent", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTQ1/MDAxNTIyMTUxNzIxMTk5.LTiuV1QSyPu6WgMB3uR7Bc-Hy19Uwgard5XKG5jj1JIg.XpdiwfmUg3Rz6IgIWyamtsrYeW0BJRqj28XyHRuADA0g.PNG.shin4299/Humi_tile_auto.png?type=w580", backgroundColor:"#73C1EC", nextState:"modechange"
-                attributeState "silent", label:'\nSilent Mode', action:"setModeMedium", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTE2/MDAxNTIyMTUxNzIxMTE3.wVp36he9l0up0SalfSgNMOff9y_U9F2wyPc5AfmK-nEg.coHcd4mj2byTBFzTWnc4yjKi7xbJb7QhfgBn9ASt5eUg.PNG.shin4299/Humi_tile_1.png?type=w580", backgroundColor:"#6eca8f", nextState:"modechange"
-                attributeState "medium", label:'\nMedium Mode', action:"setModeHigh", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMjEz/MDAxNTIyMTUxNzIxMTk4.VfHSHeU2sS9J-T03zqc_sSjgO4ifOxiyBtGorUPxD2kg.dnC3xCu45F_153OJfUm0Pd1_HAWFp9DWVGHLagDqOSgg.PNG.shin4299/Humi_tile_2.png?type=w580", backgroundColor:"#FFDE61", nextState:"modechange"
-                attributeState "hight", label:'\nHigh Mode', action:"setModeAuto", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTA5/MDAxNTIyMTUxNzIxMTk3.r9waU9A5WmDgRz6p6eiGYTl67F1jo5HGcurD9i57Mj0g.a1R4bIefNK0gT-NdDFmYveohdkXxUuRgJIszH9Q38Ogg.PNG.shin4299/Humi_tile_3.png?type=w580", backgroundColor:"#ff9eb2", nextState:"modechange"
+                attributeState "m1", label:'\nAuto Mode', action:"setModeSilent", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTQ1/MDAxNTIyMTUxNzIxMTk5.LTiuV1QSyPu6WgMB3uR7Bc-Hy19Uwgard5XKG5jj1JIg.XpdiwfmUg3Rz6IgIWyamtsrYeW0BJRqj28XyHRuADA0g.PNG.shin4299/Humi_tile_auto.png?type=w580", backgroundColor:"#73C1EC", nextState:"modechange"
+                attributeState "m2", label:'\nlevel 1', action:"setMode(1)", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTE2/MDAxNTIyMTUxNzIxMTE3.wVp36he9l0up0SalfSgNMOff9y_U9F2wyPc5AfmK-nEg.coHcd4mj2byTBFzTWnc4yjKi7xbJb7QhfgBn9ASt5eUg.PNG.shin4299/Humi_tile_1.png?type=w580", backgroundColor:"#6eca8f", nextState:"modechange"
+                attributeState "m3", label:'\nlevel 2', action:"setModeHigh", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMjEz/MDAxNTIyMTUxNzIxMTk4.VfHSHeU2sS9J-T03zqc_sSjgO4ifOxiyBtGorUPxD2kg.dnC3xCu45F_153OJfUm0Pd1_HAWFp9DWVGHLagDqOSgg.PNG.shin4299/Humi_tile_2.png?type=w580", backgroundColor:"#FFDE61", nextState:"modechange"
+                attributeState "m4", label:'\nlevel 3', action:"setModeAuto", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTA5/MDAxNTIyMTUxNzIxMTk3.r9waU9A5WmDgRz6p6eiGYTl67F1jo5HGcurD9i57Mj0g.a1R4bIefNK0gT-NdDFmYveohdkXxUuRgJIszH9Q38Ogg.PNG.shin4299/Humi_tile_3.png?type=w580", backgroundColor:"#ff9eb2", nextState:"modechange"
+                attributeState "m5", label:'\nlevel 4', action:"setModeAuto", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTA5/MDAxNTIyMTUxNzIxMTk3.r9waU9A5WmDgRz6p6eiGYTl67F1jo5HGcurD9i57Mj0g.a1R4bIefNK0gT-NdDFmYveohdkXxUuRgJIszH9Q38Ogg.PNG.shin4299/Humi_tile_3.png?type=w580", backgroundColor:"#ff9eb2", nextState:"modechange"
                 
                 attributeState "modechange", label:'\n${name}', icon:"st.quirky.spotter.quirky-spotter-motion", backgroundColor:"#C4BBB5"
                 attributeState "turningOn", label:'\n${name}', action:"switch.off", icon:"https://postfiles.pstatic.net/MjAxODAzMjdfMTQ2/MDAxNTIyMTUxNzIxMTk3.xeCR1k4pk0vDOozb43Lfo6g2fMC1a_VJFUpTQ071XRUg.dyhFTAUaCwWPUYc4hPUdGiuUI5yeRJ4QpP3kX802AlIg.PNG.shin4299/Humi_tile_off.png?type=w580", backgroundColor:"#C4BBB5", nextState:"off"
@@ -226,13 +227,9 @@ metadata {
             state "turningOff", label:'....', action:"buzzerOn", backgroundColor:"#BAA7BC", nextState:"turningOn"
         }
         standardTile("ledBrightness", "device.ledBrightness") {
-            state "bright", label: 'Bright', action: "setBrightDim", icon: "st.illuminance.illuminance.bright", backgroundColor: "#ff93ac", nextState:"dim"
-            state "dim", label: 'Dim', action: "setBrightOff", icon: "st.illuminance.illuminance.light", backgroundColor: "#ffc2cd", nextState:"off"
-            state "off", label: 'Off', action: "setBright", icon: "st.illuminance.illuminance.dark", backgroundColor: "#d6c6c9", nextState:"bright"
-            
-            state "bright2", label: 'Bright', action: "dummy", icon: "st.illuminance.illuminance.bright", backgroundColor: "#ff93ac", nextState:"bright2"
-            state "dim2", label: 'Dim', action: "dummy", icon: "st.illuminance.illuminance.light", backgroundColor: "#ffc2cd", nextState:"dim2"
-            state "off2", label: 'Off', action: "dummy", icon: "st.illuminance.illuminance.dark", backgroundColor: "#d6c6c9", nextState:"off2"
+            state "2", label: 'Bright', action: "setBrightDim", icon: "st.illuminance.illuminance.bright", backgroundColor: "#ff93ac", nextState:"dim"
+            state "1", label: 'Dim', action: "setBrightOff", icon: "st.illuminance.illuminance.light", backgroundColor: "#ffc2cd", nextState:"off"
+            state "0", label: 'Off', action: "setBright", icon: "st.illuminance.illuminance.dark", backgroundColor: "#d6c6c9", nextState:"bright"            
         }         
         valueTile("use_time", "device.use_time", width: 2, height: 1) {
             state("val", label:'${currentValue}', defaultState: true
@@ -279,30 +276,12 @@ def setStatus(params){
     	sendEvent(name:"humidity", value: params.data )
     	break;
     case "mode":
-    	if(params.data != "idle") {
-	    	if(model == "Humidifier1") {
-    			sendEvent(name:"mode", value: params.data + "1" )
-        	sendEvent(name:"switch", value:"on")
-        	} else { 
-    			sendEvent(name:"mode", value: params.data )
-        		sendEvent(name:"switch", value:"on")
-			}
-        } else { }
+    	sendEvent(name:"mode", value: "M"+params.data)
     	break;
     case "power":
-    	if(params.data == "true") {
-    	sendEvent(name:"switch", value:"on")
-        }
-        else if(params.data == "false") {
-    		if(model == "Humidifier1") {
-    		sendEvent(name:"mode", value: "off1")
-	    	sendEvent(name:"switch", value:"off")
-        	} else { 
-    		sendEvent(name:"mode", value: "off")
-	    	sendEvent(name:"switch", value:"off")
-		}
-        }
-        else { }
+    	sendEvent(name:"switch", value: (params.data == 1 ? "on" : "off") )
+    	sendEvent(name:"mode", value: (params.data == 0 ? "off"))
+		
     	break;
     case "temperature":
 		def para = "${params.data}"
@@ -313,21 +292,8 @@ def setStatus(params){
         sendEvent(name:"temperature", value: tem )
         sendEvent(name:"temperature2", value: state.temp + ": " + tem )
     	break;
-    case "useTime":
-		def para = "${params.data}"
-		String data = para
-		def stf = Float.parseFloat(data)
-		def hour = Math.round(stf/3600)
-		int leftday = Math.floor(stf/3600/24)
-		int lefthour = hour - leftday*24
-        sendEvent(name:"use_time", value: leftday + "d " + lefthour + "h" )
-    	break;
     case "ledBrightness":
-    	if(model == "Humidifier1"){
         sendEvent(name:"ledBrightness", value: params.data)
-        } else {
-        sendEvent(name:"ledBrightness", value: params.data+"2")
-        }
     	break;        
     case "targetHumidity":
         sendEvent(name:"level", value: params.data)
@@ -342,7 +308,7 @@ def setStatus(params){
         sendEvent(name:"water2", value: state.wdep + ": " + water )
     	break;
     case "buzzer":
-    	sendEvent(name:"buzzer", value: (params.data == "true" ? "on" : "off") )
+    	sendEvent(name:"buzzer", value: (params.data == 1 ? "on" : "off") )
         break;
     case "dry":
     	sendEvent(name:"dry", value: params.data )
