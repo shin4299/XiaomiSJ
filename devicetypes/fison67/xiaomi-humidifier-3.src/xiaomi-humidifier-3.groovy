@@ -360,7 +360,7 @@ def setBright(){
     def body = [
         "id": state.id,
         "cmd": "ledBrightness",
-        "data": "bright"
+        "data": "off"
     ]
     def options = makeCommand(body)
     sendCommand(options, null)
