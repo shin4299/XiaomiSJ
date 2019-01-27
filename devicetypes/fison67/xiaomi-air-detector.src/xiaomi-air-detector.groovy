@@ -75,7 +75,7 @@ metadata {
 	preferences {
 	}
 
-	tiles {
+	tiles(scale: 2) {
 		multiAttributeTile(name:"fineDustLevel", type: "generic", width: 3, height: 2){
 			tileAttribute ("device.fineDustLevel", key: "PRIMARY_CONTROL") {
                 attributeState "default", label:'${currentValue}㎍/㎥', unit:"㎍/㎥", backgroundColors:[
@@ -95,8 +95,8 @@ metadata {
     			attributeState("default", label:'\nLast Update: ${currentValue}')
             }
 	}
-		valueTile("tvoc", "device.tvocLevel", decoration: "flat", width: 2, height: 2) {
-        		state "default", label:'${currentValue}㎍/㎥', unit:"㎍/㎥", backgroundColors:[
+		valueTile("tvoc", "device.tvocLevel", decoration: "flat", width: 3, height: 2) {
+        		state "default", label:'tVOC \n${currentValue}㎍/㎥\nexellent', unit:"㎍/㎥", backgroundColors:[
 				[value: 0.3, color: "#18cdff"],
             			[value: 1, color: "#19ffeb"],
             			[value: 3, color: "#ddf927"],
@@ -104,7 +104,7 @@ metadata {
             			[value: 100, color: "#f94d1d"]
             		]
         	}
- 		valueTile("carbonDioxide", "device.carbonDioxide", width: 2, height: 2, inactiveLabel: false) {
+ 		valueTile("carbonDioxide", "device.carbonDioxide", width: 3, height: 2, inactiveLabel: false) {
  			state "carbonDioxide", label:'${currentValue}ppm', unit:"CO2", backgroundColors: [
  				[value: 600, color: "#18cdff"],
                 		[value: 999, color: "#19ffeb"],
@@ -113,7 +113,7 @@ metadata {
                 		[value: 6000, color: "#f94d1d"],
  				]
  		}
-		valueTile("temperature", "device.temperature", width: 2, height: 2, inactiveLabel: false) {
+		valueTile("temperature", "device.temperature", width: 3, height: 2, inactiveLabel: false) {
  			state("temperature", label: '${currentValue}°', backgroundColors: [
  				[value: 31, color: "#153591"],
  				[value: 44, color: "#1e9cbb"],
@@ -125,7 +125,7 @@ metadata {
  				]
  				)
  		}        
-		valueTile("humidity", "device.humidity", width: 2, height: 2, inactiveLabel: false) {
+		valueTile("humidity", "device.humidity", width: 3, height: 2, inactiveLabel: false) {
  			state("humidity", label: '${currentValue}%', backgroundColors: [
  				[value: 20, color: "#f94d1d"],
  				[value: 40, color: "#ffb71e"],
@@ -135,7 +135,7 @@ metadata {
  				]
  				)
  		}        
-        	valueTile("display_label", "device.display_label", decoration: "flat") {
+    		valueTile("display_label", "device.display_label", decoration: "flat") {
             		state "default", label:'${currentValue}'
         	}        
         	valueTile("night_label", "device.night_label", decoration: "flat") {
@@ -188,7 +188,7 @@ def setStatus(params){
     	sendEvent(name:"temperature", value: params.data)
     	break;
     case "tvoc":
-    	sendEvent(name:"tvocLevel", value: params.data)
+    	sendEvent(name:"tvocLevel", value: params.data as float)
     	break;
     case "relativeHumidity":
     	sendEvent(name:"humidity", value: params.data)
@@ -231,16 +231,12 @@ def callback(physicalgraph.device.HubResponse hubResponse){
         log.debug jsonObj
 		state.BeginTime = jsonObj.state.nightBeginTime
 		state.EndTime = jsonObj.state.nightEndTime
-		sendEvent(name:"switch", value: (jsonObj.state.power == true ? "on" : "off") )
 		sendEvent(name:"fineDustLevel", value: jsonObj.state.aqi )
-		sendEvent(name:"powerSource", value: (jsonObj.state.charging == true ? "dc" : "battery") )
-		sendEvent(name:"battery", value: jsonObj.state.batteryLevel )
-		sendEvent(name:"powerSource", value: (jsonObj.state.charging == true ? "dc" : "battery") )
-		sendEvent(name:"clock", value: jsonObj.state.timeState )
-		sendEvent(name:"night", value: jsonObj.state.nightState )
+		sendEvent(name:"temperature", value: jsonObj.state.temperature )
+		sendEvent(name:"humidity", value: jsonObj.state.humidity )
+		sendEvent(name:"carbonDioxide", value: jsonObj.state.co2e )
+		sendEvent(name:"tvocLevel", value: jsonObj.state.tvoc )
 		updateLastTime()
-        beginTime()
-        endTime()
     } catch (e) {
         log.error "Exception caught while parsing data: "+e;
     }

@@ -30,18 +30,6 @@
 import groovy.json.JsonSlurper
 import groovy.transform.Field
 
-@Field 
-LANGUAGE_MAP = [
-    "temp": [
-        "Korean": "온도",
-        "English": "Temp"
-    ],
-    "tarT": [
-        "Korean": "목표온도",
-        "English": "Target"
-    ]
-]
-
 
 metadata {
 	definition (name: "Xiaomi Heater2", namespace: "fison67", author: "fison67") {
