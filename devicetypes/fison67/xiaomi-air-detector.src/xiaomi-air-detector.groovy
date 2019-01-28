@@ -41,7 +41,6 @@ metadata {
 	capability "Temperature Measurement"
 	capability "Tvoc Measurement"
         capability "Carbon Dioxide Measurement"
-        capability "Refresh"
 	capability "Refresh"
 	capability "Sensor"
 	capability "Power Source"
