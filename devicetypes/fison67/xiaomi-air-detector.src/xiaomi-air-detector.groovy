@@ -192,7 +192,7 @@ def setStatus(params){
     case "relativeHumidity":
     	sendEvent(name:"humidity", value: params.data)
     	break;
-    case "co2e":
+    case "co2":
     	sendEvent(name:"carbonDioxide", value: params.data)
     	break;
     case "battery":
@@ -233,7 +233,7 @@ def callback(physicalgraph.device.HubResponse hubResponse){
 		sendEvent(name:"fineDustLevel", value: jsonObj.state.aqi )
 		sendEvent(name:"temperature", value: jsonObj.state.temperature )
 		sendEvent(name:"humidity", value: jsonObj.state.humidity )
-		sendEvent(name:"carbonDioxide", value: jsonObj.state.co2e )
+		sendEvent(name:"carbonDioxide", value: jsonObj.state.co2 )
 		sendEvent(name:"tvocLevel", value: jsonObj.state.tvoc )
 		updateLastTime()
     } catch (e) {
