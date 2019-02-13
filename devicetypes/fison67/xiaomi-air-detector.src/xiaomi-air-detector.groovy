@@ -35,84 +35,80 @@ LANGUAGE_MAP = [
 ]
 
 metadata {
-	definition (name: "Xiaomi Air Detector", namespace: "fison67", author: "fison67", mnmn: "SmartThings", vid: "generic-switch") {
+	definition (name: "Xiaomi Air Detector", namespace: "fison67", author: "fison67", mnmn: "SmartThings") {
         capability "Air Quality Sensor"						//"on", "off"
-	capability "Relative Humidity Measurement"
-	capability "Temperature Measurement"
-	capability "Tvoc Measurement"
+		capability "Relative Humidity Measurement"
+		capability "Temperature Measurement"
+		capability "Tvoc Measurement"
         capability "Carbon Dioxide Measurement"
-	capability "Refresh"
-	capability "Sensor"
-	capability "Power Source"
-	capability "Dust Sensor" // fineDustLevel : PM 2.5   dustLevel : PM 10
+        capability "Refresh"
+		capability "Refresh"
+		capability "Sensor"
+		capability "Power Source"
+		capability "Dust Sensor" // fineDustLevel : PM 2.5   dustLevel : PM 10
 
         
         attribute "lastCheckin", "Date"
+        attribute "co2notice", "enum", ["notice", "unnotice"]  
      
-        command "XiaomiPM25"
         command "noAQS"
         command "noSwitch"
-        command "clockOn"
-        command "clockOff"
-        command "nightOn"
-        command "nightOff"
-        command "setBeHour"
-        command "setEndHour"
-        command "setBeMin"
-        command "setEndMin"
-        command "setBePm"
-        command "setBeAm"
-        command "setEndPm"
-        command "setEndAm"
-        command "setUpTime"
-        
+       
 	}
 
 
 	simulator {
 	}
 	preferences {
+		input "co2homekit", "number", title:"CO2 Notice for Homekit", defaultValue: 1500, description:"홈킷 CO2농도 경고 최저값 설정", range: "*..*"
 	}
 
 	tiles(scale: 2) {
 		multiAttributeTile(name:"fineDustLevel", type: "generic", width: 3, height: 2){
 			tileAttribute ("device.fineDustLevel", key: "PRIMARY_CONTROL") {
                 attributeState "default", label:'${currentValue}㎍/㎥', unit:"㎍/㎥", backgroundColors:[
-			[value: -1, color: "#C4BBB5"],
-            		[value: 0, color: "#7EC6EE"],
-            		[value: 15, color: "#51B2E8"],
-            		[value: 50, color: "#e5c757"],
-            		[value: 75, color: "#E40000"],
-            		[value: 500, color: "#970203"]
+				[value: 12, color: "#adff00"],
+            			[value: 36, color: "#f9d62e"],
+            			[value: 56, color: "#fc913a"],
+            			[value: 151, color: "#bf0000"],
+            			[value: 250, color: "#800000"],
+            			[value: 1000, color: "#400000"]
             		]
 			}
             
-            tileAttribute("device.battery", key: "SECONDARY_CONTROL") {
-    			attributeState("default", label:'Battery: ${currentValue}%\n')
-            }		
             tileAttribute("device.lastCheckin", key: "SECONDARY_CONTROL") {
     			attributeState("default", label:'\nLast Update: ${currentValue}')
             }
 	}
-		valueTile("tvoc", "device.tvocLevel", decoration: "flat", width: 3, height: 2) {
-        		state "default", label:'tVOC \n${currentValue}㎍/㎥\nexellent', unit:"㎍/㎥", backgroundColors:[
-				[value: 0.3, color: "#18cdff"],
-            			[value: 1, color: "#19ffeb"],
-            			[value: 3, color: "#ddf927"],
-            			[value: 9, color: "#ffb71e"],
-            			[value: 100, color: "#f94d1d"]
+		valueTile("pm25", "device.fineDustLevel", decoration: "flat", width: 2, height: 2) {
+        		state "default", label:'${currentValue}\n㎍/㎥', unit:"ppm", backgroundColors:[
+				[value: 12, color: "#adff00"],
+            			[value: 36, color: "#f9d62e"],
+            			[value: 56, color: "#fc913a"],
+            			[value: 151, color: "#bf0000"],
+            			[value: 250, color: "#800000"],
+            			[value: 1000, color: "#400000"]
             		]
         	}
- 		valueTile("carbonDioxide", "device.carbonDioxide", width: 3, height: 2, inactiveLabel: false) {
- 			state "carbonDioxide", label:'${currentValue}ppm', unit:"CO2", backgroundColors: [
- 				[value: 600, color: "#18cdff"],
-                		[value: 999, color: "#19ffeb"],
-                		[value: 1500, color: "#ddf927"],
-                		[value: 2000, color: "#ffb71e"],
-                		[value: 6000, color: "#f94d1d"],
+		valueTile("tvoc", "device.tvocLevel", decoration: "flat", width: 2, height: 2) {
+        		state "default", label:'${currentValue}\nppb', unit:"ppb", backgroundColors:[
+				[value: 65, color: "#adff00"],
+            			[value: 220, color: "#f9d62e"],
+            			[value: 660, color: "#fc913a"],
+            			[value: 2000, color: "#bf0000"],
+            			[value: 10000, color: "#400000"]
+            		]
+        	}
+ 		valueTile("carbonDioxide", "device.carbonDioxide", width: 2, height: 2, inactiveLabel: false) {
+ 			state "carbonDioxide", label:'${currentValue}\nppm', unit:"CO2", backgroundColors: [
+				[value: 1000, color: "#adff00"],
+            			[value: 1500, color: "#f9d62e"],
+            			[value: 2000, color: "#fc913a"],
+            			[value: 2500, color: "#bf0000"],
+            			[value: 5000, color: "#400000"]
  				]
  		}
-		valueTile("temperature", "device.temperature", width: 3, height: 2, inactiveLabel: false) {
+		valueTile("temperature", "device.temperature", width: 2, height: 2, inactiveLabel: false) {
  			state("temperature", label: '${currentValue}°', backgroundColors: [
  				[value: 31, color: "#153591"],
  				[value: 44, color: "#1e9cbb"],
@@ -124,7 +120,7 @@ metadata {
  				]
  				)
  		}        
-		valueTile("humidity", "device.humidity", width: 3, height: 2, inactiveLabel: false) {
+		valueTile("humidity", "device.humidity", width: 2, height: 2, inactiveLabel: false) {
  			state("humidity", label: '${currentValue}%', backgroundColors: [
  				[value: 20, color: "#f94d1d"],
  				[value: 40, color: "#ffb71e"],
@@ -134,33 +130,39 @@ metadata {
  				]
  				)
  		}        
-    		valueTile("display_label", "device.display_label", decoration: "flat") {
-            		state "default", label:'${currentValue}'
+    		valueTile("tvoc_label", "device.tvoc_label", decoration: "flat", width: 2, height: 1) {
+            		state "default", label:"tVOC"
         	}        
-        	valueTile("night_label", "device.night_label", decoration: "flat") {
-            		state "default", label:'${currentValue}'
+    		valueTile("pm25_label", "device.pm25_label", decoration: "flat", width: 2, height: 1) {
+            		state "default", label:"PM2.5"
+        	}        
+    		valueTile("co2_label", "device.co2_label", decoration: "flat", width: 2, height: 1) {
+            		state "default", label:"CO2"
+        	}        
+    		valueTile("temp_label", "device.temp_label", decoration: "flat", width: 2, height: 1) {
+            		state "default", label:"Temperature"
+        	}        
+    		valueTile("humi_label", "device.humi_label", decoration: "flat", width: 2, height: 1) {
+            		state "default", label:"Humidity"
+        	}        
+        	valueTile("refresh_label", "device.refresh_label", decoration: "flat", width: 2, height: 1) {
+            		state "default", label:'Refresh'
         	}
-        	valueTile("power_label", "device.power_label", decoration: "flat") {
-            		state "default", label:'${currentValue}'
-        	}
-        	valueTile("refresh_label", "device.refresh_label", decoration: "flat") {
-            		state "default", label:'${currentValue}'
-        	}
-        valueTile("timeset_label", "device.timeset_label", decoration: "flat", width: 1, height: 2) {
-            state "default", label:'${currentValue}', action:"setUpTime"
-        }
         
         valueTile("battery", "device.battery", width: 2, height: 2) {
             state("val", label:'${currentValue}%', defaultState: true, backgroundColor:"#00a0dc")
         }
-	standardTile("refresh", "device.thermostatMode") {
+	standardTile("refresh", "device.thermostatMode", width: 2, height: 2) {
 		state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 	}
-        
+	standardTile("co2notice", "device.co2notice", width: 2, height: 2) {
+		state "unnotice", icon:"st.secondary.refresh"
+		state "notice", icon:"st.secondary.refresh"
+	}        
 
         
         main (["fineDustLevel"])
-		details(["fineDustLevel", "tvoc", "carbonDioxide", "temperature", "humidity", "refresh"])
+		details(["fineDustLevel", "pm25_label", "tvoc_label", "co2_label", "pm25", "tvoc", "carbonDioxide", "temp_label", "humi_label", "refresh_label", "temperature", "humidity", "refresh"])
 		
 	}
 }
@@ -181,19 +183,21 @@ def setStatus(params){
  
  	switch(params.key){
     case "pm2.5":
-    	sendEvent(name:"fineDustLevel", value: params.data)
+    	sendEvent(name:"fineDustLevel", value: params.data as float)
     	break;
     case "temperature":
-    	sendEvent(name:"temperature", value: params.data)
+    	sendEvent(name:"temperature", value: params.data as float)
     	break;
     case "tvoc":
     	sendEvent(name:"tvocLevel", value: params.data as float)
     	break;
     case "relativeHumidity":
-    	sendEvent(name:"humidity", value: params.data)
+    	sendEvent(name:"humidity", value: params.data as float)
     	break;
     case "co2":
-    	sendEvent(name:"carbonDioxide", value: params.data)
+    	def co2ppm = params.data as int
+    	sendEvent(name:"carbonDioxide", value: params.data as int)
+        sendEvent(name:"co2notice", value: ( co2ppm >= state.co2notice ? "notice" : "unnotice"))        
     	break;
     case "battery":
     	sendEvent(name:"battery", value: params.data)
@@ -242,8 +246,7 @@ def callback(physicalgraph.device.HubResponse hubResponse){
 }
 
 def updated() {
-    refresh()
-    setLanguage(settings.selectedLang)
+	state.co2notice = co2homekit	
 }
 
 def sendCommand(options, _callback){
