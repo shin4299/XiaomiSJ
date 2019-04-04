@@ -25,12 +25,12 @@ metadata {
 
         command "childOn", ["string"]
         command "childOff", ["string"]
-		command "childRefresh"
+        command "childRefresh"
 
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "01", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "02", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "03", inClusters: "0006, 0000, 0003", outClusters: "0019", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
-        
+
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "01", inClusters: "0006, 0000, 0003", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "02", inClusters: "0006, 0000, 0003", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
         fingerprint profileId: "0104", deviceId: "0100", endpoint: "03", inClusters: "0006, 0000, 0003", manufacturer: "", model: "", deviceJoinName: "GQ Switch"
@@ -45,9 +45,9 @@ metadata {
         reply "zcl on-off on": "on/off: 1"
         reply "zcl on-off off": "on/off: 0"
     }
-	preferences {
-		input name: "stateins", type: "bool", title: "스테이트 ins 값 변경", description:"NOTE: 설치후 차일드 디바이스가 Unavailable 될때, 또는 장치화면에 'NOK'가 뜨면 켜고 저장"
-        }
+    preferences {
+        input name: "stateins", type: "bool", title: "스테이트 ins 값 변경", description: "NOTE: 설치후 차일드 디바이스가 Unavailable 될때, 또는 장치화면에 'NOK'가 뜨면 켜고 저장"
+    }
     tiles(scale: 2) {
         multiAttributeTile(name: "switch", type: "lighting", width: 6, height: 4, canChangeIcon: true) {
             tileAttribute("device.switch", key: "PRIMARY_CONTROL") {
@@ -75,16 +75,16 @@ def installed() {
     state.sep = 0
     log.debug "install Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
     updateDataValue("onOff", "catchall")
-//    sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
-//	healthPoll()
+    //    sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
+    //   healthPoll()
 }
 
 def updated() {
-	if(stateins) {
-		state.ins = 1
-		device.updateSetting("stateins", false)
-	}
-	sendEvent(name: "state", value: state.ins, displayed: false)
+    if (stateins) {
+        state.ins = 1
+        device.updateSetting("stateins", false)
+    }
+    sendEvent(name: "state", value: state.ins, displayed: false)
 }
 
 def parse(String description) {
@@ -96,12 +96,12 @@ def parse(String description) {
             sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
         } else {
             Map descMap = zigbee.parseDescriptionAsMap(description)
-            log.debug "$descMap"
+            //log.debug "$descMap"
             def ep = descMap.sourceEndpoint as int
-            log.debug "descMapEP=${ep}"
-            log.debug "parse Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
+            //log.debug "descMapEP=${ep}"
+            //log.debug "parse Channel=${state.ch} ins=${state.ins} sep=${state.sep}"
 
-            if (state.ins == 0 || state.ins == null ) {
+            if (state.ins == 0 || state.ins == null) {
                 if (state.ch < ep) {
                     state.ch = ep
                     log.debug "search Channel=${state.ch}"
@@ -109,7 +109,7 @@ def parse(String description) {
                 } else if (state.ch == ep) {
                     if (state.sep == 3) {
                         state.ins = 1
-				        createChildDevices()
+                        createChildDevices()
                     } else {
                         state.sep = state.sep + 1
                         log.debug "Search temp time=${state.sep}"
@@ -119,15 +119,17 @@ def parse(String description) {
                 }
 
             } else {
+                if (descMap.value == "00" || descMap.value == "01") {
 
-                if (descMap ?.clusterId == "0006" && descMap.sourceEndpoint == "01") {
-                    sendEvent(map)
-                } else if (descMap ?.clusterId == "0006") {
-                    def childDevice = childDevices.find {
-                        it.deviceNetworkId == "$device.deviceNetworkId:${descMap.sourceEndpoint}"
-                    }
-                    if (childDevice) {
-                        childDevice.sendEvent(map)
+                    if (descMap ?.clusterId == "0006" && descMap.sourceEndpoint == "01") {
+                        sendEvent(map)
+                    } else if (descMap ?.clusterId == "0006") {
+                        def childDevice = childDevices.find {
+                            it.deviceNetworkId == "$device.deviceNetworkId:${descMap.sourceEndpoint}"
+                        }
+                        if (childDevice) {
+                            childDevice.sendEvent(map)
+                        }
                     }
                 }
             }
@@ -139,11 +141,11 @@ def parse(String description) {
 
 
 private void createChildDevices() {
-	if (state.ch != 1) {
-    	for (i in 2..state.ch) {
-        	addChildDevice("GoQual Child Switch", "${device.deviceNetworkId}:0${i}", device.hubId,
-            	[completedSetup: true, label: "${device.displayName.split("1")[-1]}${i}", isComponent : false])
-    	}
+    if (state.ch != 1) {
+        for (i in 2..state.ch) {
+            addChildDevice("GoQual Child Switch", "${device.deviceNetworkId}:0${i}", device.hubId,
+                [completedSetup: true, label: "${device.displayName.split("1")[-1]}${i}", isComponent : false])
+        }
     }
 }
 
