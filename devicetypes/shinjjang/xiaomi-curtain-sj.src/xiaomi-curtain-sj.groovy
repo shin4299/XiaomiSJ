@@ -12,15 +12,16 @@
  */
 
 metadata {
-    definition(name: "Xiaomi Curtain SJ", namespace: "ShinJjang", author: "ShinJjang", vid: "SmartThings-smartthings-Springs_Window_Fashions_Shade", ocfDeviceType: "oic.d.blind") {
+    definition(name: "Xiaomi Curtain SJ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind") {
+      capability "Window Shade" 
       capability "Switch Level"
       capability "Actuator"
       capability "Health Check"
       capability "Switch"
+      capability "Sensor"
       capability "Refresh"
-      capability "Window Shade" 
       
-      attribute "Window Shade", "enum", ["open", "close", "stop"]        
+//      attribute "Window Shade", "enum", ["open", "close", "stop"]        
        
 
         fingerprint endpointId: "0x01", profileId: "0104", deviceId: "0202", inClusters: "0000, 0004, 0003, 0005, 000A, 0102, 000D, 0013, 0006, 0001, 0406", outClusters: "0019, 000A, 000D, 0102, 0013, 0006, 0001, 0406"
@@ -57,16 +58,18 @@ metadata {
             state("close", label: 'close', action: "windowShade.close", icon: "st.contact.contact.closed")
         }
         standardTile("stop", "stop", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-            state("stop", label: 'stop', action: "stop", icon: "st.illuminance.illuminance.dark")
+            state("stop", label: 'stop', action: "windowShade.stop", icon: "st.illuminance.illuminance.dark")
         }
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
+        }
+        standardTile("home", "device.level", width: 2, height: 2, decoration: "flat") {
+            state "default", label: "home", action:"presetPosition", icon:"st.Home.home2"
         }
         main(["windowShade"])
         details(["windowShade", "open", "stop", "close", "refresh"])
     }
 }
-
 // Parse incoming device messages to generate events
 def parse(String description) {
     def parseMap = zigbee.parseDescriptionAsMap(description)
@@ -225,4 +228,4 @@ def refresh() {
     log.debug "refresh()"
 //    "st rattr 0x${device.deviceNetworkId} ${1} 0x000d 0x0055"
      zigbee.readAttribute(0x000d, 0x0055)
-}
+     }
