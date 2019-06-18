@@ -172,11 +172,11 @@ def setLevel(level) {
     
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Close"
-            zigbee.command(0x0102, 0x00)
+            log.debug "Set Open"
+            zigbee.command(0x0102, 0x01)
         } else if(level < 1) {
-           log.debug "Set Open"
-              zigbee.command(0x0102, 0x01)
+           log.debug "Set Close"
+              zigbee.command(0x0102, 0x00)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -201,11 +201,11 @@ def setLevel(level) {
 def shadeAction(level) {
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Close"
-            zigbee.command(0x0102, 0x00)
+            log.debug "Set Open"
+            zigbee.command(0x0102, 0x01)
         } else if(level < 1) {
-           log.debug "Set Open"
-              zigbee.command(0x0102, 0x01)
+           log.debug "Set Close"
+              zigbee.command(0x0102, 0x00)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
