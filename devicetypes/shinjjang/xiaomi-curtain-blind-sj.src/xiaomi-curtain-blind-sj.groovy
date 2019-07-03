@@ -14,8 +14,6 @@
 metadata {
     definition(name: "Xiaomi Curtain & Blind SJ ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind") {
       capability "Window Shade" 
-      capability "Window Shade Preset"
-      capability "Switch"
       capability "Switch Level"
       capability "Actuator"
       capability "Health Check"
@@ -37,7 +35,7 @@ metadata {
     preferences {
           input name: "mode", type: "bool", title: "Xiaomi Curtain Direction Set", description: "Reverse Mode ON", required: true,
              displayDuringSetup: true
-          input name: "openInt", type: "integer", title: "Open Percetage(**% 열림)", defaultValue: 30, description: "**% 열림을 설정합니다.", required: true
+//          input name: "openInt", type: "integer", title: "Open Percetage(**% 열림)", defaultValue: 30, description: "**% 열림을 설정합니다.", required: true
    }    
 
     tiles(scale: 2) {
@@ -73,61 +71,83 @@ metadata {
         details(["windowShade", "open", "stop", "close", "refresh"])
     }
 }
+
 // Parse incoming device messages to generate events
 def parse(String description) {
     def parseMap = zigbee.parseDescriptionAsMap(description)
+//            log.debug "parseMap11:${parseMap}"    
     def event = zigbee.getEvent(description)
 
     try {
-        if (parseMap.raw.startsWith("0104")) {
-        } else if (parseMap.raw.endsWith("0007")) {
-            log.debug "running…"
-        } else if (parseMap.endpoint.endsWith("01")) {
-            if (parseMap["cluster"] == "000D" && parseMap["attrId"] == "0055") {
+            def windowShadeStatus = ""
+            def curtainLevel = null
+
+         if (parseMap["cluster"] == "000D" && parseMap["attrId"] == "0055") {
+         	if(parseMap.raw.endsWith("00000000") || parseMap["result"] == "success") {
                 long theValue = Long.parseLong(parseMap["value"], 16)
                 float floatValue = Float.intBitsToFloat(theValue.intValue());
-                def windowShadeStatus = ""
-            int curtainLevel = floatValue.intValue()
+//                 log.debug "long => ${theValue}, float => ${floatValue}"
+            	 curtainLevel = floatValue.intValue()
+                 log.debug "Level => ${curtainLevel}"
+			} else {
+	            log.debug "running…"
+            }
+        } else if (parseMap["cluster"] == "0102" && parseMap["attrId"] == "0008") {
+                long endValue = Long.parseLong(parseMap["value"], 16)
+                 curtainLevel = endValue
+                 log.debug "endLevel=>${curtainLevel}"
+        } else if (parseMap["clusterId"] == "0000" && parseMap["encoding"] == "42") {
+         			def valueData = parseMap["value"]
+                    def eventStack = []
+                    def position = valueData[36,37];
+                    String hexposition = position
+	                long endValue = Long.parseLong(hexposition, 16)
+    	             curtainLevel = endValue
+                    log.debug "check position = ${position}, check Level = ${curtainLevel}"
+        } else if (parseMap.raw.startsWith("0104")) {
+            log.debug "Xiaomi Curtain"
+        } else if (parseMap.raw.endsWith("0007")) {
+            log.debug "running…"
+        }
+        else {
+            log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
+        }
+        	if(curtainLevel >= 0){
                 if(mode == true) {
-                    if (theValue > 0x42c70000) {
+                    if (curtainLevel == 100) {
                         log.debug "Just Closed"
                         windowShadeStatus = "closed"
                         curtainLevel = 0
-                    } else if (theValue > 0) {
-                        log.debug curtainLevel + '% Partially Open'
-                        windowShadeStatus = "partially open"
-                        curtainLevel = 100 - floatValue.intValue()
-                    } else {
+                    } else if (curtainLevel == 0) {
                         log.debug "Just Fully Open"
                         windowShadeStatus = "open"
                         curtainLevel = 100
+                    } else {
+                        log.debug curtainLevel + '% Partially Open'
+                        windowShadeStatus = "partially open"
+                        curtainLevel = 100 - curtainLevel
                     }
                 } else {
-                    if (theValue > 0x42c70000) {
+                    if (curtainLevel == 100) {
                         log.debug "Just Fully Open"
                         windowShadeStatus = "open"
                         curtainLevel = 100
-                    } else if (theValue > 0) {
+                    } else if (curtainLevel > 0) {
                         log.debug curtainLevel + '% Partially Open'
                         windowShadeStatus = "partially open"
-                        curtainLevel = floatValue.intValue()
+                        curtainLevel = curtainLevel
                     } else {
                         log.debug "Just Closed"
                         windowShadeStatus = "closed"
                         curtainLevel = 0
                     }
                 }
-
-                def eventStack = []
+				def eventStack = []
                 eventStack.push(createEvent(name:"windowShade", value: windowShadeStatus as String))
                 eventStack.push(createEvent(name:"level", value: curtainLevel))
-
-                return eventStack
-            }
-        } else {
-            log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
-        }
-
+                eventStack.push(createEvent(name:"switch", value: (windowShadeStatus == "closed" ? "off" : "on")))
+                return eventStack                
+			}                
     } catch (Exception e) {
         log.warn e
     }
@@ -139,27 +159,14 @@ def updated() {
 
 def close() {
     log.debug "close()"
-    setLevel(0)
-//   zigbee.command(0x0102, 0x01)
+   zigbee.command(0x0102, 0x01)
 }
 
 def open() {
     log.debug "open()"
-    setLevel(100)
-   //zigbee.command(0x0102, 0x00)
+   zigbee.command(0x0102, 0x00)
 }
 
-def off() {
-    log.debug "close()"
-    setLevel(0)
-//   zigbee.command(0x0102, 0x01)
-}
-
-def on() {
-    log.debug "open()"
-    setLevel(100)
-//   zigbee.command(0x0102, 0x00)
-}
 
 def Pause() {
     log.debug "stop()"
@@ -172,11 +179,11 @@ def setLevel(level) {
     
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Open"
-            zigbee.command(0x0102, 0x01)
+            log.debug "Set Close"
+            zigbee.command(0x0102, 0x00)
         } else if(level < 1) {
-           log.debug "Set Close"
-              zigbee.command(0x0102, 0x00)
+           log.debug "Set Open"
+              zigbee.command(0x0102, 0x01)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -201,11 +208,11 @@ def setLevel(level) {
 def shadeAction(level) {
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Open"
-            zigbee.command(0x0102, 0x01)
+            log.debug "Set Close"
+            zigbee.command(0x0102, 0x00)
         } else if(level < 1) {
-           log.debug "Set Close"
-              zigbee.command(0x0102, 0x00)
+           log.debug "Set Open"
+              zigbee.command(0x0102, 0x01)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -228,5 +235,6 @@ def shadeAction(level) {
 }
 def refresh() {
     log.debug "refresh()"
+//    "st rattr 0x${device.deviceNetworkId} ${1} 0x000d 0x0055"
      zigbee.readAttribute(0x000d, 0x0055)
      }
