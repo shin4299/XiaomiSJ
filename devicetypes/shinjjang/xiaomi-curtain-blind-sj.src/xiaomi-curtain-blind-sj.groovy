@@ -15,6 +15,7 @@ metadata {
     definition(name: "Xiaomi Curtain & Blind SJ ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind") {
       capability "Window Shade" 
       capability "Switch Level"
+      capability "Switch"
       capability "Actuator"
       capability "Health Check"
       capability "Sensor"
