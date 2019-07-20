@@ -158,14 +158,31 @@ def updated() {
 	sendEvent(name: "openlevel", value: openInt)
 }	
 
+def on() {
+	open()
+}
+
+
+def off() {
+	close()
+}
+
 def close() {
     log.debug "close()"
-   zigbee.command(0x0102, 0x01)
+	if(mode == true){
+		zigbee.command(0x0102, 0x00)
+	} else {
+		zigbee.command(0x0102, 0x01)
+	}
 }
 
 def open() {
     log.debug "open()"
-   zigbee.command(0x0102, 0x00)
+	if(mode == true){
+		zigbee.command(0x0102, 0x01)
+	} else {
+		zigbee.command(0x0102, 0x00)
+	}
 }
 
 
