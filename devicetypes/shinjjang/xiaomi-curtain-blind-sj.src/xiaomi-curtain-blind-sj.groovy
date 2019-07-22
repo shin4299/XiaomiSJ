@@ -159,30 +159,20 @@ def updated() {
 }	
 
 def on() {
-	open()
+	setLevel(100)
 }
 
 
 def off() {
-	close()
+	setLevel(0)
 }
 
 def close() {
-    log.debug "close()"
-	if(mode == true){
-		zigbee.command(0x0102, 0x00)
-	} else {
-		zigbee.command(0x0102, 0x01)
-	}
+	setLevel(0)
 }
 
 def open() {
-    log.debug "open()"
-	if(mode == true){
-		zigbee.command(0x0102, 0x01)
-	} else {
-		zigbee.command(0x0102, 0x00)
-	}
+	setLevel(100)
 }
 
 
@@ -197,11 +187,11 @@ def setLevel(level) {
     
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Close"
-            zigbee.command(0x0102, 0x00)
+            log.debug "Set Open"
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } else if(level < 1) {
-           log.debug "Set Open"
-              zigbee.command(0x0102, 0x01)
+           log.debug "Set Close"
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -211,26 +201,29 @@ def setLevel(level) {
     } else{
        if (level == 100){
             log.debug "Set Open"
-            zigbee.command(0x0102, 0x00)
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
         } else if(level > 0) {
             log.debug "Set Level: ${level}%"
             String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
             zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else {
             log.debug "Set Close"
-            zigbee.command(0x0102, 0x01)
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } 
     }
 }
 
 def shadeAction(level) {
+    if (level == null) {level = 0}
+    level = level as int
+    
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Close"
-            zigbee.command(0x0102, 0x00)
+            log.debug "Set Open"
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } else if(level < 1) {
-           log.debug "Set Open"
-              zigbee.command(0x0102, 0x01)
+           log.debug "Set Close"
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -240,14 +233,14 @@ def shadeAction(level) {
     } else{
        if (level == 100){
             log.debug "Set Open"
-            zigbee.command(0x0102, 0x00)
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
         } else if(level > 0) {
             log.debug "Set Level: ${level}%"
             String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
             zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else {
             log.debug "Set Close"
-            zigbee.command(0x0102, 0x01)
+           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } 
     }
 }
