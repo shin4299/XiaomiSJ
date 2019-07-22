@@ -191,7 +191,8 @@ def setLevel(level) {
            zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } else if(level < 1) {
            log.debug "Set Close"
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
+            String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
+            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -201,7 +202,8 @@ def setLevel(level) {
     } else{
        if (level == 100){
             log.debug "Set Open"
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
+            String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
+            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else if(level > 0) {
             log.debug "Set Level: ${level}%"
             String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
@@ -223,7 +225,8 @@ def shadeAction(level) {
            zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } else if(level < 1) {
            log.debug "Set Close"
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
+            String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
+            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else {
            log.debug "Set Level: ${level}%"
             def f = 100 - level
@@ -233,7 +236,8 @@ def shadeAction(level) {
     } else{
        if (level == 100){
             log.debug "Set Open"
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 42c80000)
+            String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
+            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else if(level > 0) {
             log.debug "Set Level: ${level}%"
             String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
@@ -244,6 +248,7 @@ def shadeAction(level) {
         } 
     }
 }
+
 def refresh() {
     log.debug "refresh()"
 //    "st rattr 0x${device.deviceNetworkId} ${1} 0x000d 0x0055"
