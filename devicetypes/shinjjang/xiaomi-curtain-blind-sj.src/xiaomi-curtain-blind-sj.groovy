@@ -23,7 +23,7 @@ metadata {
       
     command "levelOpenClose"
     command "shadeAction"
-    command "Pause"       
+    command "pause"       
 
         fingerprint endpointId: "0x01", profileId: "0104", deviceId: "0202", inClusters: "0000, 0004, 0003, 0005, 000A, 0102, 000D, 0013, 0006, 0001, 0406", outClusters: "0019, 000A, 000D, 0102, 0013, 0006, 0001, 0406", manufacturer: "LUMI", model: "lumi.curtain", deviceJoinName: "Xiaomi Curtain V1"
 //        fingerprint endpointId: "0x01", profileId: "0104", deviceId: "0202", inClusters: "0000, 0003, 0102, 000D, 0013, 0001", outClusters: "0003, 000A", manufacturer: "LUMI", model: "lumi.curtain.hagl04", deviceJoinName: "Xiaomi Curtain V2"
@@ -59,7 +59,7 @@ metadata {
             state("close", label: 'close', action: "windowShade.close", icon: "st.contact.contact.closed")
         }
         standardTile("stop", "stop", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
-            state("stop", label: 'stop', action: "Pause", icon: "st.illuminance.illuminance.dark")
+            state("stop", label: 'stop', action: "pause", icon: "st.illuminance.illuminance.dark")
         }
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
@@ -84,31 +84,39 @@ def parse(String description) {
             def curtainLevel = null
 
          if (parseMap["cluster"] == "000D" && parseMap["attrId"] == "0055") {
-         	if(parseMap.raw.endsWith("00000000") || parseMap["result"] == "success") {
+         	if(parseMap.raw.endsWith("00000000") || parseMap["size"] =="16") { //&& parseMap["size"] == "28") {
                 long theValue = Long.parseLong(parseMap["value"], 16)
                 float floatValue = Float.intBitsToFloat(theValue.intValue());
-//                 log.debug "long => ${theValue}, float => ${floatValue}"
+                 //log.debug "long => ${theValue}, float => ${floatValue}"
             	 curtainLevel = floatValue.intValue()
-                 log.debug "Level => ${curtainLevel}"
+                 log.debug "level => ${curtainLevel}"
 			} else {
 	            log.debug "running…"
             }
-        } else if (parseMap["cluster"] == "0102" && parseMap["attrId"] == "0008") {
+        } else if (parseMap["clusterId"] == "0102"){
+        		if(parseMap["attrId"] == "0008") {
                 long endValue = Long.parseLong(parseMap["value"], 16)
                  curtainLevel = endValue
-                 log.debug "endLevel=>${curtainLevel}"
+                 //log.debug "endValuecurtainLevel=>${curtainLevel}"
+                 } else if(parseMap["command"] == "0B") {
+                 log.debug "stopped"
+                    sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
+                 }
         } else if (parseMap["clusterId"] == "0000" && parseMap["encoding"] == "42") {
          			def valueData = parseMap["value"]
                     def eventStack = []
                     def position = valueData[36,37];
+                    //log.debug "check position = ${position}"
                     String hexposition = position
 	                long endValue = Long.parseLong(hexposition, 16)
     	             curtainLevel = endValue
                     log.debug "check position = ${position}, check Level = ${curtainLevel}"
         } else if (parseMap.raw.startsWith("0104")) {
             log.debug "Xiaomi Curtain"
+          //  log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
         } else if (parseMap.raw.endsWith("0007")) {
-            log.debug "running…"
+         //   log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
+           // log.debug "0007…"
         }
         else {
             log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
@@ -176,7 +184,7 @@ def open() {
 }
 
 
-def Pause() {
+def pause() {
     log.debug "stop()"
    zigbee.command(0x0102, 0x02)
 }
@@ -251,6 +259,5 @@ def shadeAction(level) {
 
 def refresh() {
     log.debug "refresh()"
-//    "st rattr 0x${device.deviceNetworkId} ${1} 0x000d 0x0055"
      zigbee.readAttribute(0x000d, 0x0055)
      }
