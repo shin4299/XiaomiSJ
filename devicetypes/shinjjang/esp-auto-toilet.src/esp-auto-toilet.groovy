@@ -63,15 +63,9 @@ metadata {
 		input "url", "text", title: "ESP IP주소", description: "Auto Toilet 로컬IP 주소를 입력", required: true
 		input "ipa", "number", title: "ST IP주소1", description: "ST 로컬IP 주소 첫번째 자리", range: "100..999", required: true
 		input "ipb", "number", title: "ST IP주소2", description: "ST 로컬IP 주소 두번째 자리", range: "1..999", required: true
-		input "ipc", "number", title: "ST IP주소3", description: "ST 로컬IP 주소 세번째 자리", range: "1..999", required: true
+		input "ipc", "integer", title: "ST IP주소3", description: "ST 로컬IP 주소 세번째 자리", range: "1..999", required: true
 		input "ipd", "number", title: "ST IP주소4", description: "ST 로컬IP 주소 네번째 자리", range: "1..255", required: true
 		input "onDistance", "number", title: "ON Distance", description: "착좌로 인식할 거리", range: "10..80", defaultValue: 50
-		input "offDistance", "number", title: "OFF Distance", description: "탈좌로 인식할 거리", range: "10..80", defaultValue: 70
-		input "pTime", "number", title: "P Time", description: "소변후 물양(3~8)", range: "3..8", defaultValue: 6
-		input "dTime", "number", title: "D Time", description: "대변후 물양(3~8)", range: "3..8", defaultValue: 6
-		
-//		input name: "autoMode", type: "enum", title: "자동 물내림 기능", options:[1:"켜기", 0:"끄기"]
-		//input name: "autoMode", type: "bool", title: "자동 물내림 기능"
     }
 
 	tiles(scale: 2) {
@@ -100,59 +94,26 @@ metadata {
             state "turningOff", label:'....', action:"autoModeOn", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOn"
         }
 
-        standardTile("autoBlock", "device.autoBlock", inactiveLabel: false, width: 2, height: 2) {
-            state "on", label:'Block ON', action:"autoBlockOff", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOff"
-            state "off", label:'Block OFF', action:"autoBlockOn", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOn"
-             
-        	state "turningOn", label:'....', action:"autoBlockOff", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOff"
-            state "turningOff", label:'....', action:"autoBlockOn", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOn"
-        }
-
         standardTile("distance", "device.distance", inactiveLabel: false, width: 2, height: 2) {
-            state "on", label:'Distance ON', action:"distanceOff", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOff"
-            state "off", label:'Distance OFF', action:"distanceOn", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOn"
+            state "on", label:'Distance', action:"distanceOff", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOff"
+            state "off", label:'Distance', action:"distanceOn", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOn"
              
         	state "turningOn", label:'....', action:"distanceOff", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOff"
             state "turningOff", label:'....', action:"distanceOn", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOn"
         }
 
-        standardTile("distanceLevel", "device.distanceLevel", inactiveLabel: false, decoration:"flat", width: 2, height: 2) {
+        valueTile("distanceLevel", "device.distanceLevel", inactiveLabel: false, decoration:"flat", width: 2, height: 2) {
             state "distanceLevel", label:'${currentValue}'
         }
-        standardTile("distanceCap", "device.distanceCap", inactiveLabel: false, decoration:"flat", width: 2, height: 2) {
-            state "distanceLevel", label:'누르면 30초간 작동'
+        valueTile("distanceCap", "device.distanceCap", inactiveLabel: false, decoration:"flat", width: 2, height: 2) {
+            state "distanceLevel", label:'누르면->\n30초간 작동'
+        }
+        standardTile("blank", "blank", inactiveLabel: false, decoration:"flat", width: 2, height: 2) {
+            state "blank", label:''
         }
 
-        valueTile("temperature", "device.temperature", inactiveLabel: false, width: 2, height: 2) {
-            state "temperature", label:'${currentValue}°', icon:"st.Weather.weather2",
-                backgroundColors:[
- 		    [value: 1, color: "#153591"],
- 		    [value: 7, color: "#1e9cbb"],
- 		    [value: 15, color: "#90d2a7"],
- 		    [value: 24, color: "#44b621"],
- 		    [value: 29, color: "#f1d801"],
- 		    [value: 35, color: "#d04e00"],
- 		    [value: 40, color: "#bc2323"]
-                ]
-        }
-        valueTile("humidity", "device.humidity", inactiveLabel: false, width: 2, height: 2) {
-            state "humidity", label:'${currentValue}%', unit:"%", icon:"https://raw.githubusercontent.com/bspranger/Xiaomi/master/images/XiaomiHumidity.png",
-            backgroundColors:[
-                [value: 0, color: "#FFFCDF"],
-                [value: 20, color: "#FDF789"],
-                [value: 40, color: "#A5CF63"],
-                [value: 60, color: "#6FBD7F"],
-                [value: 80, color: "#4CA98C"],
-                [value: 90, color: "#0072BB"],
-                [value: 95, color: "#085396"]
-            ]
-        }
-        standardTile("pressure", "device.pressure", inactiveLabel: false, decoration:"flat", width: 2, height: 2) {
-            state "pressure", label:'${currentValue}', icon:"https://raw.githubusercontent.com/bspranger/Xiaomi/master/images/XiaomiPressure.png"
-        }
-       
        	main (["motion"])
-      	details(["motion", "temperature", "humidity", "pressure", "valve", "autoMode", "autoBlock", "distance", "distanceCap", "distanceLevel"])
+      	details(["motion", "valve", "autoMode", "autoBlock", "blank", "distanceCap", "distance", "distanceLevel"])
 	}
 }
 
@@ -162,16 +123,12 @@ def updated() {
 	state.address = url
 	state.ip1 = ipa
 	state.ip2 = ipb
-    if (ipc == 999) {
-     state.ip3 = 0 as int
-    } else {
 	state.ip3 = ipc
-    }
 	state.ip4 = ipd
 	state.dis1 = onDistance
-	state.dis2 = offDistance
-    state.dis3 = pTime
-    state.dis4 = dTime
+	//state.dis2 = offDistance
+    //state.dis3 = pTime
+    //state.dis4 = dTime
     setServer()
 	setDistance()
 //    timerLoop()
@@ -212,17 +169,8 @@ def parse(String description) {
     if (result.containsKey("temperature")) {
        	events << createEvent(name:"temperature", value: result.temperature)
     }
-    if (result.containsKey("humidity")) {
-       	events << createEvent(name:"humidity", value: result.humidity)
-    }
-    if (result.containsKey("pressure")) {
-       	events << createEvent(name:"pressure", value: result.pressure)
-    }
     if (result.containsKey("autoMode")) {
        	events << createEvent(name:"autoMode", value: result.autoMode)
-    }
-    if (result.containsKey("autoBlock")) {
-       	events << createEvent(name:"autoBlock", value: result.autoBlock)
     }
     if (result.containsKey("sendDistance")) {
        	events << createEvent(name:"distance", value: result.sendDistance)
