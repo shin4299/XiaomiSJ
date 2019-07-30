@@ -162,8 +162,8 @@ def updated() {
 	state.address = url
 	state.ip1 = ipa
 	state.ip2 = ipb
-    if (state.ip3 == 999) {
-     ipc == 0 as int
+    if (ipc == 999) {
+     state.ip3 = 0 as int
     } else {
 	state.ip3 = ipc
     }
