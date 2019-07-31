@@ -38,19 +38,15 @@ metadata {
         capability "Switch"
         capability "Refresh"
         capability "Motion Sensor"
-		capability "Temperature Measurement"
-		capability "Relative Humidity Measurement"
 		capability "Sensor"
-        attribute "autoMode", "enum", ["off", "on"]        
+        attribute "mode", "enum", ["auto", "manual"]        
         attribute "autoBlock", "enum", ["off", "on"]        
         attribute "distance", "enum", ["off", "on"]        
         attribute "distanceLevel", "number"
         
         command "refresh"
-        command "autoModeOn"
-        command "autoModeOff"
-        command "autoBlockOn"
-        command "autoBlockOff"
+        command "auto"
+        command "manual"
         command "distanceOn"
         command "distanceOff"
         command "getStatusOfESPEasy"
@@ -86,12 +82,12 @@ metadata {
 				state "closing", label: '${name}', action: "valve.open", icon: "st.valves.water.closed", backgroundColor: "#ffffff", nextState:"opening"
 			}
             
-        standardTile("autoMode", "device.autoMode", inactiveLabel: false, width: 2, height: 2) {
-            state "on", label:'Auto ON', action:"autoModeOff", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOff"
-            state "off", label:'Auto OFF', action:"autoModeOn", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOn"
+        standardTile("mode", "device.mode", inactiveLabel: false, width: 2, height: 2) {
+            state "auto", label:'Auto ON', action:"manual", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOff"
+            state "manual", label:'Auto OFF', action:"auto", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOn"
              
-        	state "turningOn", label:'....', action:"autoModeOff", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOff"
-            state "turningOff", label:'....', action:"autoModeOn", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOn"
+        	state "turningOn", label:'....', action:"manual", icon: "st.custom.sonos.muted", backgroundColor:"#d1cdd2", nextState:"turningOff"
+            state "turningOff", label:'....', action:"auto", icon: "st.custom.sonos.unmuted", backgroundColor:"#73C1EC", nextState:"turningOn"
         }
 
         standardTile("distance", "device.distance", inactiveLabel: false, width: 2, height: 2) {
@@ -113,7 +109,7 @@ metadata {
         }
 
        	main (["motion"])
-      	details(["motion", "valve", "autoMode", "autoBlock", "blank", "distanceCap", "distance", "distanceLevel"])
+      	details(["motion", "valve", "mode", "blank", "distanceCap", "distance", "distanceLevel"])
 	}
 }
 
@@ -131,6 +127,7 @@ def updated() {
     //state.dis4 = dTime
     setServer()
 	setDistance()
+    autosink()
 //    timerLoop()
 //    pollco()
 }
@@ -161,16 +158,13 @@ def parse(String description) {
     
     if (result.containsKey("valve")) {
        	events << createEvent(name:"valve", value: result.valve)
-       	events << createEvent(name:"switch", value: (result.valve = "open" ? "on" : "off"))
+       	events << createEvent(name:"switch", value: (result.valve == "open" ? "on" : "off"))
     }
     if (result.containsKey("motion")) {
        	events << createEvent(name:"motion", value: result.motion)
     }
-    if (result.containsKey("temperature")) {
-       	events << createEvent(name:"temperature", value: result.temperature)
-    }
     if (result.containsKey("autoMode")) {
-       	events << createEvent(name:"autoMode", value: result.autoMode)
+       	events << createEvent(name:"mode", value: (result.autoMode == "on" ? "auto" : "manual"))
     }
     if (result.containsKey("sendDistance")) {
        	events << createEvent(name:"distance", value: result.sendDistance)
@@ -254,24 +248,14 @@ def setValve(angle) {
     }
 }
 
-def autoModeOn() {
+def auto() {
     log.debug "autoModeOn"
 	setTaskValue(3, 2, 1)
 }
 
-def autoModeOff() {
+def manual() {
     log.debug "autoModeOff"
 	setTaskValue(3, 2, 0)
-}
-
-def autoBlockOn() {
-    log.debug "autoBlockOn"
-	setTaskValue(3, 3, 1)
-}
-
-def autoBlockOff() {
-    log.debug "autoBlockOff"
-	setTaskValue(3, 3, 0)
 }
 
 def distanceOn() {
@@ -293,12 +277,23 @@ def setServer() {
 }
 
 def setDistance() {
-    for (i in 1..4) {
+    for (i in 1..1) {
     	def dis = state."dis${i}"
     	def setdis = dis as int
 		setTaskValue(5, i, setdis)
 	}
 }
+
+def autosink() {
+    if(device.currentValue('mode') == 'auto') {
+    setTaskValue(3, 2, 1)
+    log.debug "mode = auto"
+    } else {
+    setTaskValue(3, 2, 0)
+    log.debug "mode = manual"
+    }
+}
+
 
 def setTaskValue(dnum, vnum, value) {
     try{
@@ -317,98 +312,3 @@ def setTaskValue(dnum, vnum, value) {
     	log.error "Error!!! ${e}"
     }
 }
-/*
-def setServer() {
-    try{
-    	for (i in 1..4) {
-        def ip = state."ip${i}"
-        log.debug "ip=${ip}"
-        def setip = ip as int
-        log.debug "setip=${setip}"
-        def options = [
-            "method": "GET",
-            "path": "/control?cmd=TaskValueSet,4,${i},${setip}",
-            "headers": [
-                "HOST": state.address + ":80",
-                "Content-Type": "application/json"
-            ]
-        ]
-        def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: callback])
-        sendHubCommand(myhubAction)
-    	}
-    }catch(e){
-    	log.error "Error!!! ${e}"
-    }
-}
-
-
-def setDistance() {
-    try{
-    	for (i in 2..4) {
-        def dis = state."dis${i}"
-        log.debug "dis=${dis}"
-        def setdis = dis as int
-        log.debug "setdis=${setdis}"
-        def options = [
-            "method": "GET",
-            "path": "/control?cmd=TaskValueSet,3,${i},${setdis}",
-            "headers": [
-                "HOST": state.address + ":80",
-                "Content-Type": "application/json"
-            ]
-        ]
-        def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: callback])
-        sendHubCommand(myhubAction)
-    	}
-    }catch(e){
-    	log.error "Error!!! ${e}"
-    }
-}
-*/
-/*
-def setServo(angle) {
-    try{
-//    	def timeGap = new Date().getTime() - Long.valueOf(state.lastTime)
-//        if(timeGap > 1000 * 60){
-//            log.warn "ESP Easy device is not connected..."
-//        }
-//		log.debug "Try to get data from ${state.address}"
-        def options = [
-            "method": "GET",
-            "path": "/control?cmd=Servo,1,13,${angle}",
-            "headers": [
-                "HOST": state.address + ":80",
-                "Content-Type": "application/json"
-            ]
-        ]
-        def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: callback])
-        sendHubCommand(myhubAction)
-    }catch(e){
-    	log.error "Error!!! ${e}"
-    }
-}*/
-
-/*try {
-    httpPut("http://192.168.31.74/control?cmd=Servo,1,15,90") { resp ->
-        log.debug "response data: ${resp.data}"
-        log.debug "response contentType: ${resp.contentType}"
-    }
-} catch (e) {
-    log.debug "something went wrong: $e"
-}
-/*    try{
-		log.debug "Try to get data from ${state.address}"
-        def options = [
-            "method": "GET",
-            "path": "/control?cmd=Servo,1,15,90",
-            "headers": [
-                "HOST": state.address + ":80",
-                "Content-Type": "application/json"
-            ]
-        ]
-        def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: callback])
-        sendHubCommand(myhubAction)
-    }catch(e){
-    	log.error "Error!!! ${e}"
-    }
-}*/
