@@ -13,11 +13,13 @@
  *
  */
 metadata {
-	definition (name: "Switch Child Device", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.switch", mnmn: "SmartThings", vid: "generic-switch") {
+	definition (name: "DW Child Device SW", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.switch", mnmn: "SmartThings", vid: "generic-switch") {
 		capability "Switch"
 		capability "Actuator"
 		capability "Sensor"
 		capability "Refresh"
+		capability "Configuration"
+		capability "Health Check"
 	}
 
 	tiles {
@@ -35,14 +37,32 @@ metadata {
 	}
 }
 
+
+def installed() {
+	// This is set to a default value, but it is the responsibility of the parent to set it to a more appropriate number
+	sendEvent(name: "checkInterval", value: 30 * 60, displayed: false, data: [protocol: "zigbee"])
+}
+
 void on() {
+   log.debug("on")
 	parent.childOn(device.deviceNetworkId)
 }
 
 void off() {
+   log.debug("off")
 	parent.childOff(device.deviceNetworkId)
 }
 
-void refresh() {
+def ping() {
+   log.debug("ping")
 	parent.childRefresh(device.deviceNetworkId)
+}
+
+def refresh() {
+   log.debug("refresh")
+	parent.childRefresh(device.deviceNetworkId)
+}
+
+def uninstalled() {
+	parent.delete()
 }
