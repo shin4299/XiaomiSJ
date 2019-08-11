@@ -69,20 +69,10 @@ metadata {
 }
 
 
-def installed() {
+//def installed() {
 	// This is set to a default value, but it is the responsibility of the parent to set it to a more appropriate number
-	sendEvent(name: "checkInterval", value: 30 * 60, displayed: false, data: [protocol: "zigbee"])
-}
-
-void on() {
-   log.debug("on")
-	parent.childOn(device.deviceNetworkId)
-}
-
-void off() {
-   log.debug("off")
-	parent.childOff(device.deviceNetworkId)
-}
+//	sendEvent(name: "checkInterval", value: 30 * 60, displayed: false, data: [protocol: "zigbee"])
+//}
 
 def ping() {
    log.debug("ping")
