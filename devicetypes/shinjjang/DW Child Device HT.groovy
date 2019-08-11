@@ -13,11 +13,11 @@
  *
  */
 metadata {
-	definition (name: "DW Child Device TH", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.switch", mnmn: "SmartThings", vid: "generic-switch") {
+	definition (name: "DW Child Device TH", namespace: "ShinJjang", author: "ShinJjang", mnmn:"SmartThings", vid:"generic-humidity-3") {
 	capability "Temperature Measurement"
 	capability "Relative Humidity Measurement"
 	capability "Sensor"
-	capability "Battery"
+	capability "Configuration"
 	capability "Health Check"
 	}
 
