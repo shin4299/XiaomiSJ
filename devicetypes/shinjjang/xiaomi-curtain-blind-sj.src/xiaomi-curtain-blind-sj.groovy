@@ -92,6 +92,7 @@ def parse(String description) {
                  log.debug "level => ${curtainLevel}"
 			} else {
 	            log.debug "running…"
+	            log.debug "running… >> ${parseMap}"
             }
         } else if (parseMap["clusterId"] == "0102"){
         		if(parseMap["attrId"] == "0008") {
