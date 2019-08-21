@@ -13,9 +13,10 @@
 
 metadata {
     definition(name: "Xiaomi Curtain & Blind SJ ", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind") {
-      capability "Window Shade" 
+      capability "Window Shade"
+//      capability "Window Shade Preset"
       capability "Switch Level"
-      capability "Switch"
+   //   capability "Switch"
       capability "Actuator"
       capability "Health Check"
       capability "Sensor"
@@ -36,7 +37,6 @@ metadata {
     preferences {
           input name: "mode", type: "bool", title: "Xiaomi Curtain Direction Set", description: "Reverse Mode ON", required: true,
              displayDuringSetup: true
-//          input name: "openInt", type: "integer", title: "Open Percetage(**% 열림)", defaultValue: 30, description: "**% 열림을 설정합니다.", required: true
    }    
 
     tiles(scale: 2) {
@@ -64,9 +64,9 @@ metadata {
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
         }
-        standardTile("home", "device.level", width: 2, height: 2, decoration: "flat") {
-            state "default", label: "home", action:"presetPosition", icon:"st.Home.home2"
-        }
+ //       standardTile("home", "device.level", width: 2, height: 2, decoration: "flat") {
+ //           state "default", label: "home", action:"presetPosition", icon:"st.Home.home2"
+ //       }
 
         main(["windowShade"])
         details(["windowShade", "open", "stop", "close", "refresh"])
@@ -92,7 +92,7 @@ def parse(String description) {
                  log.debug "level => ${curtainLevel}"
 			} else {
 	            log.debug "running…"
-	            log.debug "running… >> ${parseMap}"
+	           // log.debug "running… >> ${parseMap}"
             }
         } else if (parseMap["clusterId"] == "0102"){
         		if(parseMap["attrId"] == "0008") {
@@ -114,15 +114,16 @@ def parse(String description) {
                     log.debug "check position = ${position}, check Level = ${curtainLevel}"
         } else if (parseMap.raw.startsWith("0104")) {
             log.debug "Xiaomi Curtain"
+            runIn(20, checkP)
           //  log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
         } else if (parseMap.raw.endsWith("0007")) {
-         //   log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
-           // log.debug "0007…"
+            log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
         }
         else {
             log.debug "Unhandled Event - description:${description}, parseMap:${parseMap}, event:${event}"
         }
         	if(curtainLevel >= 0){
+            	state.checkS = 0
                 if(mode == true) {
                     if (curtainLevel == 100) {
                         log.debug "Just Closed"
@@ -186,73 +187,52 @@ def open() {
 
 
 def pause() {
-    log.debug "stop()"
+	log.info "pause()"
    zigbee.command(0x0102, 0x02)
+}
+
+def checkP() {
+	if(state.checkS == 1) {
+    	sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
+        }
 }
 
 def setLevel(level) {
     if (level == null) {level = 0}
     level = level as int
-    
-   if(mode == true){
-       if(level == 100) {
-            log.debug "Set Open"
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
-        } else if(level < 1) {
-           log.debug "Set Close"
-            String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
-            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
-        } else {
-           log.debug "Set Level: ${level}%"
-            def f = 100 - level
-           String hex = Integer.toHexString(Float.floatToIntBits(f)).toUpperCase()
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
-       }  
-    } else{
-       if (level == 100){
-            log.debug "Set Open"
-            String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
-            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
-        } else if(level > 0) {
-            log.debug "Set Level: ${level}%"
-            String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
-            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
-        } else {
-            log.debug "Set Close"
-           zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
-        } 
+    Integer  currentLevel = device.currentValue("level")
+    state.checkS = 1
+    if (level > currentLevel) {
+        sendEvent(name: "windowShade", value: "opening")
+    } else if (level < currentLevel) {
+        sendEvent(name: "windowShade", value: "closing")
     }
-}
-
-def shadeAction(level) {
-    if (level == null) {level = 0}
-    level = level as int
-    
    if(mode == true){
        if(level == 100) {
-            log.debug "Set Open"
+			log.info "open()"
            zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } else if(level < 1) {
-           log.debug "Set Close"
+			log.info "close()"
+			sendEvent(name: "windowShade", value: "closing")
             String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
             zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else {
-           log.debug "Set Level: ${level}%"
+           log.info "Set Level: ${level}%"
             def f = 100 - level
            String hex = Integer.toHexString(Float.floatToIntBits(f)).toUpperCase()
            zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
        }  
     } else{
        if (level == 100){
-            log.debug "Set Open"
+			log.info "open()"
             String hex = Integer.toHexString(Float.floatToIntBits(100)).toUpperCase()
             zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else if(level > 0) {
-            log.debug "Set Level: ${level}%"
+            log.info "Set Level: ${level}%"
             String hex = Integer.toHexString(Float.floatToIntBits(level)).toUpperCase()
             zigbee.writeAttribute(0x000d, 0x0055, 0x39, hex)
         } else {
-            log.debug "Set Close"
+			log.info "close()"
            zigbee.writeAttribute(0x000d, 0x0055, 0x39, 00000000)
         } 
     }

@@ -106,6 +106,8 @@ def parse(String description) {
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelReport cmd) {
+	log.debug "multilevelreport ${cmd}"
+
     def result = []
 	def map = [:]
 	switch (cmd.sensorType) {
@@ -133,6 +135,7 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
+    def result = []
 	def map = [name: "battery", unit: "%"]
 	if (cmd.batteryLevel == 0xFF) {
 		map.value = 1
@@ -140,7 +143,9 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 	} else {
 		map.value = cmd.batteryLevel
 	}
-	map
+    result << createEvent(map)
+//	map
+	result
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd, ep = null) {
@@ -212,9 +217,9 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelEndPointR
             log.debug "child ep=$cmd.endPoints"
 		}
 	}
-    response([
-		refreshAll()
-	])
+//    response([
+//		refreshAll()
+//	])
 }
 
 def isDW3ch() {
@@ -232,7 +237,6 @@ def zwaveEvent(physicalgraph.zwave.Command cmd, ep) {
     def value = event == 3? "on" : "off"
         ep ? changeSwitch(ep, value) : []
         log.debug "changeSwitch2 val: ${value} && ep: ${ep} && event: ${event} "
-//	log.warn "Unhandled ${cmd}" + (ep ? " from endpoint $ep" : "")
 }
 
 private onOffCmd(value, endpoint) {
@@ -253,6 +257,11 @@ def refresh(endpoint) {
     } else {
 		refreshAll()
 	}
+//	zwave.wakeUpV2.wakeUpIntervalSet(seconds: 0 , nodeid: zwaveHubNodeId).format()
+}
+
+private commands(commands, delay=200) {
+    delayBetween(commands.collect{ command(it) }, delay)
 }
 
 def ping() {
