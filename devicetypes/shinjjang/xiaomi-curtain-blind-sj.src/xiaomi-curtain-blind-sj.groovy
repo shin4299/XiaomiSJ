@@ -238,6 +238,10 @@ def setLevel(level) {
     }
 }
 
+def ping() {
+    return refresh()
+}
+
 def refresh() {
     log.debug "refresh()"
      zigbee.readAttribute(0x000d, 0x0055)
