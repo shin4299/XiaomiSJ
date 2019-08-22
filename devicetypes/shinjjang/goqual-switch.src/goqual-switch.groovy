@@ -164,12 +164,16 @@ def off() {
 
 def childOn(String dni) {
     log.debug(" child on ${dni}")
-    zigbee.command(0x0006, 0x01, "", [destEndpoint: getChildEndpoint(dni)])
+	def ep = getChildEndpoint(dni)
+    zigbee.command(0x0006, 0x01, "", [destEndpoint: ep])
+	runIn(2, checkState(ep))
 }
 
 def childOff(String dni) {
     log.debug(" child off ${dni}")
-    zigbee.command(0x0006, 0x00, "", [destEndpoint: getChildEndpoint(dni)])
+	def ep = getChildEndpoint(dni)
+    zigbee.command(0x0006, 0x00, "", [destEndpoint: ep])
+	runIn(2, checkState(ep))	
 }
 
 /**
@@ -177,6 +181,14 @@ def childOff(String dni) {
  * */
 def ping() {
     return refresh()
+}
+
+def checkState() {
+    	sendHubCommand(stateRefresh().collect { new physicalgraph.device.HubAction(it) }, 0)
+}
+
+def stateRefresh(ep) {
+    return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: ep])
 }
 
 def refresh() {
