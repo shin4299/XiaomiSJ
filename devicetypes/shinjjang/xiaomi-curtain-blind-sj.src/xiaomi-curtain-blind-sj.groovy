@@ -16,7 +16,7 @@ metadata {
       capability "Window Shade"
 //      capability "Window Shade Preset"
       capability "Switch Level"
-   //   capability "Switch"
+      capability "Switch"
       capability "Actuator"
       capability "Health Check"
       capability "Sensor"
