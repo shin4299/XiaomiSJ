@@ -164,13 +164,13 @@ def off() {
 }
 
 def childOn(String dni) {
-    log.debug(" child on ${dni}")
+    log.info(" child on ${dni}")
     zigbee.command(0x0006, 0x01, "", [destEndpoint: getChildEndpoint(dni)])
 //	stateRefresh(dni)
 }
 
 def childOff(String dni) {
-    log.debug(" child off ${dni}")
+    log.info(" child off ${dni}")
     zigbee.command(0x0006, 0x00, "", [destEndpoint: getChildEndpoint(dni)])
 //	stateRefresh(dni)
 }
@@ -197,7 +197,7 @@ def refresh() {
 }
 
 def childRefresh(String dni) {
-    log.debug(" child refresh ${dni}")
+    log.info(" child refresh ${dni}")
     return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: getChildEndpoint(dni)])
 }
 
