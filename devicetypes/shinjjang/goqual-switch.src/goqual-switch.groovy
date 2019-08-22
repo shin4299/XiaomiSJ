@@ -164,16 +164,14 @@ def off() {
 
 def childOn(String dni) {
     log.debug(" child on ${dni}")
-	def ep = getChildEndpoint(dni)
     zigbee.command(0x0006, 0x01, "", [destEndpoint: ep])
-	runIn(2, checkState(ep))
+//	runIn(2, checkState(ep))
 }
 
 def childOff(String dni) {
     log.debug(" child off ${dni}")
-	def ep = getChildEndpoint(dni)
     zigbee.command(0x0006, 0x00, "", [destEndpoint: ep])
-	runIn(2, checkState(ep))	
+//	runIn(2, checkState(ep))	
 }
 
 /**
