@@ -255,9 +255,16 @@ def refresh(endpoint) {
 			"delay 500"
 	], 500)
     } else {
-		refreshAll()
-	}
+    	def cmds = []
+		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
+		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
+        sendCommands(cmds,1000)
 //	zwave.wakeUpV2.wakeUpIntervalSet(seconds: 0 , nodeid: zwaveHubNodeId).format()
+	}
+}
+private sendCommands(cmds, delay=200) {
+	log.info "cmds"
+    sendHubCommand( cmds, delay)
 }
 
 private commands(commands, delay=200) {

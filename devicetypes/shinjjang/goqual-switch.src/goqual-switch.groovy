@@ -90,6 +90,7 @@ def updated() {
 def parse(String description) {
     log.debug "description is $description"
     Map map = zigbee.getEvent(description)
+    log.debug "map is $map"
     if (map) {
         if (description ?.startsWith('on/off')) {
             log.debug "receive on/off message without endpoint id"
@@ -164,14 +165,14 @@ def off() {
 
 def childOn(String dni) {
     log.debug(" child on ${dni}")
-    zigbee.command(0x0006, 0x01, "", [destEndpoint: ep])
-//	runIn(2, checkState(ep))
+    zigbee.command(0x0006, 0x01, "", [destEndpoint: getChildEndpoint(dni)])
+//	stateRefresh(dni)
 }
 
 def childOff(String dni) {
     log.debug(" child off ${dni}")
-    zigbee.command(0x0006, 0x00, "", [destEndpoint: ep])
-//	runIn(2, checkState(ep))	
+    zigbee.command(0x0006, 0x00, "", [destEndpoint: getChildEndpoint(dni)])
+//	stateRefresh(dni)
 }
 
 /**
@@ -181,12 +182,14 @@ def ping() {
     return refresh()
 }
 
-def checkState() {
-    	sendHubCommand(stateRefresh().collect { new physicalgraph.device.HubAction(it) }, 0)
+def checkState(dni) {
+    log.debug(" child checkState ${dni}")
+    	sendHubCommand(childRefresh(dni))
 }
 
-def stateRefresh(ep) {
-    return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: ep])
+def stateRefresh(String dni) {
+    log.debug(" child stateRefresh ${dni}")
+	runIn(10, checkState(dni))	
 }
 
 def refresh() {
@@ -194,6 +197,7 @@ def refresh() {
 }
 
 def childRefresh(String dni) {
+    log.debug(" child refresh ${dni}")
     return zigbee.readAttribute(0x0006, 0x0000, [destEndpoint: getChildEndpoint(dni)])
 }
 
