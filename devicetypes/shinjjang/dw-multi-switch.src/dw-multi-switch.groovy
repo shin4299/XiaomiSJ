@@ -20,8 +20,8 @@ metadata {
 	capability "Sensor"
 	capability "Battery"
 	capability "Health Check"
-//    capability "Refresh"
-    capability "Configuration"
+    capability "Refresh"
+//    capability "Configuration"
 
     attribute "lastCheckin", "String"
 
@@ -88,7 +88,7 @@ metadata {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
         main("temperature2")
-        details(["temperature", "humidity", "battery"]) //, "refresh"
+        details(["temperature", "humidity", "battery"]) //
     }
 }
 
@@ -130,6 +130,7 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
+	log.debug "BatteryReport ${cmd}"
     def result = []
 	def map = [name: "battery", unit: "%"]
 	if (cmd.batteryLevel == 0xFF) {
@@ -138,6 +139,7 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 	} else {
 		map.value = cmd.batteryLevel
 	}
+    log.debug "eventmap: ${map}"
     result << createEvent(map)
 //	map
 	result
@@ -251,12 +253,13 @@ def refresh(endpoint) {
         cmds << zwave.batteryV1.batteryGet()
 		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
 		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
+        
         sendCommands(cmds,1000)
 	}
 }
 
 private sendCommands(cmds, delay=1000) {
-    sendHubCommand( cmds, delay)
+    sendHubCommand(cmds, delay)
 }
 
 private commands(commands, delay=200) {
