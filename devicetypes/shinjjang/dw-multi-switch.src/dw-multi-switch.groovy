@@ -14,14 +14,13 @@
  *
  */
 metadata {
-	definition(name: "DW Multi Switch", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.thermostat", mnmn: "SmartThings", vid:"generic-temperature") {
+	definition(name: "DW Multi Switch", namespace: "ShinJjang", author: "ShinJjang", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {  //vid:"generic-temperature"
 	capability "Temperature Measurement"
 	capability "Relative Humidity Measurement"
 	capability "Sensor"
 	capability "Battery"
 	capability "Health Check"
-    capability "Refresh"
-    capability "Polling"
+//    capability "Refresh"
     capability "Configuration"
 
     attribute "lastCheckin", "String"
@@ -49,7 +48,7 @@ metadata {
                 )
             }
             tileAttribute("device.lastCheckin", key: "SECONDARY_CONTROL") {
-                attributeState("lastCheckin", label:'${currentValue}' //icon:"st.Weather.weather12",
+                attributeState("lastCheckin", label:'${currentValue}' 
                 )
             }
         }
@@ -85,14 +84,11 @@ metadata {
                 [value: 51, color: "#44b621"]
             ]
         }
-        valueTile("lastcheckin", "device.lastCheckin", inactiveLabel: false, decoration:"flat", width: 4, height: 1) {
-            state "lastcheckin", label:'Last Event:\n ${currentValue}'
-        }
 		standardTile("refresh", "device.switch", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
         main("temperature2")
-        details(["temperature", "humidity", "battery", "refresh", "lastcheckin"])
+        details(["temperature", "humidity", "battery"]) //, "refresh"
     }
 }
 
@@ -127,7 +123,6 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 	}
     log.debug "eventmap: ${map}"
     result << createEvent(map)
-//	result = createEvent(map)
     def now = new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone)
     result <<  createEvent(name: "lastCheckin", value: now)	
     
@@ -217,9 +212,6 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelEndPointR
             log.debug "child ep=$cmd.endPoints"
 		}
 	}
-//    response([
-//		refreshAll()
-//	])
 }
 
 def isDW3ch() {
@@ -256,14 +248,14 @@ def refresh(endpoint) {
 	], 500)
     } else {
     	def cmds = []
+        cmds << zwave.batteryV1.batteryGet()
 		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
 		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
         sendCommands(cmds,1000)
-//	zwave.wakeUpV2.wakeUpIntervalSet(seconds: 0 , nodeid: zwaveHubNodeId).format()
 	}
 }
-private sendCommands(cmds, delay=200) {
-	log.info "cmds"
+
+private sendCommands(cmds, delay=1000) {
     sendHubCommand( cmds, delay)
 }
 
@@ -272,7 +264,7 @@ private commands(commands, delay=200) {
 }
 
 def ping() {
-	refresh()
+//	refresh()
 }
 
 def childOnOff(deviceNetworkId, value) {
@@ -285,14 +277,10 @@ def childRefresh(deviceNetworkId) {
 	if (switchId != null) sendHubCommand refresh(switchId)
 }
 
-private refreshAll() {
-	childDevices.each { childRefresh(it.deviceNetworkId) }
-//	sendHubCommand refresh()
-}
-
 def installed() {
 	log.debug "Installed ${device.displayName}"
 	sendEvent(name: "checkInterval", value: 2 * 15 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+	refresh()
 }
 
 def updated() {

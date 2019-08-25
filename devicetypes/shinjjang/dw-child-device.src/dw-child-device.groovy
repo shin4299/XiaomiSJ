@@ -41,17 +41,17 @@ def installed() {
 }
 
 def on() {
-	log.debug "on"
+	log.info "on"
 	parent.childOnOff(device.deviceNetworkId, 0xFF)
 }
 
 def off() {
-	log.debug "off"
+	log.info "off"
     parent.childOnOff(device.deviceNetworkId, 0x00)
 }
 
 def refresh() {
-	log.debug "refresh"
+	log.info "refresh"
     parent.childRefresh(device.deviceNetworkId)
 }
 
