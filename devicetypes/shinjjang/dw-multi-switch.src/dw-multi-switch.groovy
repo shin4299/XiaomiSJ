@@ -20,8 +20,8 @@ metadata {
 	capability "Sensor"
 	capability "Battery"
 	capability "Health Check"
-    capability "Refresh"
-//    capability "Configuration"
+//    capability "Refresh"
+    capability "Configuration"
 
     attribute "lastCheckin", "String"
 
