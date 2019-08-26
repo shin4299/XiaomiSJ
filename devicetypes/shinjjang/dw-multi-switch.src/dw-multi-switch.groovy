@@ -28,6 +28,9 @@ metadata {
     fingerprint mfr:"018C", prod:"0059", model:"0001", deviceJoinName: "DW Switch 3CH"
     fingerprint mfr:"018C", prod:"0058", model:"0001", deviceJoinName: "DW Switch 2CH"
     fingerprint mfr:"018C", prod:"0057", model:"0001", deviceJoinName: "DW Switch 1CH"
+    fingerprint mfr:"018C", prod:"0066", model:"0001", deviceJoinName: "DW Switch 3CH"
+    fingerprint mfr:"018C", prod:"0065", model:"0001", deviceJoinName: "DW Switch 2CH"
+    fingerprint mfr:"018C", prod:"0064", model:"0001", deviceJoinName: "DW Switch 1CH"
     
 	}
 	simulator {}
