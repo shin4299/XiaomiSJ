@@ -90,6 +90,9 @@ metadata {
 		standardTile("refresh", "device.switch", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
+		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+			state "configure", label:'', action:"configure", icon:"st.secondary.configure"
+		}
         main("temperature2")
         details(["temperature", "humidity", "battery"]) //
     }
@@ -144,12 +147,11 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 	}
     log.debug "eventmap: ${map}"
     result << createEvent(map)
-//	map
 	result
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd, ep = null) {
-	log.debug "Security Message Encap ${cmd}"
+//	log.debug "Security Message Encap ${cmd}"
 	def encapsulatedCommand = cmd.encapsulatedCommand()
 	if (encapsulatedCommand) {
 		zwaveEvent(encapsulatedCommand, null)
@@ -173,9 +175,10 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd, ep = null) {
-	log.debug "Multichannel command ${cmd}" + (ep ? " from endpoint $ep" : "")
-	def encapsulatedCommand = cmd.encapsulatedCommand()
-	zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
+//	log.debug "Multichannel command ${cmd}" + (ep ? " from endpoint $ep" : "")
+    def value = cmd.parameter[5] == 3? "on" : "off"
+    ep = cmd.sourceEndPoint
+    ep ? changeSwitch(ep, value) : []
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, ep = null) {
@@ -195,21 +198,21 @@ private changeSwitch(endpoint, value) {
 	if(endpoint) {
 		String childDni = "${device.deviceNetworkId}:$endpoint"
 		def child = childDevices.find { it.deviceNetworkId == childDni }
-		log.debug "(name: switch, value: ${value})"
-		result << child.sendEvent(name: "switch", value: value, isStateChange: true, descriptionText: "Switch ${endpoint} is ${value}")
+		log.debug "(name: childswitch${endpoint}, value: ${value})"
+		result << child.sendEvent(name: "switch", value: value)
 	}
 	result
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelEndPointReport cmd, ep = null) {
 	if(!childDevices) {
-		if (isDW3ch()) {
+		if (isDW3ch() || isDWK3ch()) {
 			addChildSwitches(3)
             log.debug "child 3"
-		} else if (isDW2ch()) {
+		} else if (isDW2ch() || isDWK2ch()) {
 			addChildSwitches(2)
             log.debug "child 2"
-		} else if (isDW1ch()) {
+		} else if (isDW1ch() || isDWK1ch()) {
 			addChildSwitches(1)
             log.debug "child 1"
 		} else {
@@ -220,24 +223,39 @@ def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelEndPointR
 }
 
 def isDW3ch() {
-	zwaveInfo.prod.equals("0059")
+	zwaveInfo.prod.equals("0066")
 }
 def isDW2ch() {
-	zwaveInfo.prod.equals("0058")
+	zwaveInfo.prod.equals("0065")
 }
 def isDW1ch() {
+	zwaveInfo.prod.equals("0064")
+}
+def isDWK3ch() {
+	zwaveInfo.prod.equals("0059")
+}
+def isDWK2ch() {
+	zwaveInfo.prod.equals("0058")
+}
+def isDWK1ch() {
 	zwaveInfo.prod.equals("0057")
 }
 
 def zwaveEvent(physicalgraph.zwave.Command cmd, ep) {
-    def event = cmd.event
-    def value = event == 3? "on" : "off"
-        ep ? changeSwitch(ep, value) : []
-        log.debug "changeSwitch2 val: ${value} && ep: ${ep} && event: ${event} "
+    log.debug "${device.displayName}: Unhandled ${cmd}" + (ep ? " from endpoint $ep" : "")
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.manufacturerspecificv2.ManufacturerSpecificReport cmd) {
+	log.debug "manufacturerId:   ${cmd.manufacturerId}"
+	log.debug "productId:        ${cmd.productId}"
+	log.debug "productTypeId:    ${cmd.productTypeId}"
+	def msr = String.format("%04X-%04X-%04X", cmd.manufacturerId, cmd.productTypeId, cmd.productId)
+	updateDataValue("MSR", msr)
+	createEvent([descriptionText: "$device.displayName MSR: $msr", isStateChange: false])
 }
 
 private onOffCmd(value, endpoint) {
-	log.debug "onoffCmd val:${value}, ep:${endpoint}"
+//	log.debug "onoffCmd val:${value}, ep:${endpoint}"
 	delayBetween([
 			secureEncap(zwave.basicV1.basicSet(value: value), endpoint),
 		//	secureEncap(zwave.basicV1.basicGet(), endpoint),
@@ -290,15 +308,15 @@ def installed() {
 }
 
 def updated() {
-	sendHubCommand secure(zwave.multiChannelV3.multiChannelEndPointGet())
+	sendHubCommand (zwave.multiChannelV3.multiChannelEndPointGet())
 }
 
 def configure() {
 	log.debug "Configure..."
-	response([
-			secure(zwave.multiChannelV3.multiChannelEndPointGet()),
-			secure(zwave.manufacturerSpecificV2.manufacturerSpecificGet())
-	])
+    	def cmds = []
+        cmds << zwave.multiChannelV3.multiChannelEndPointGet()
+		cmds << zwave.manufacturerSpecificV2.manufacturerSpecificGet()        
+        sendCommands(cmds,1000)    
 }
 
 private secure(cmd) {
