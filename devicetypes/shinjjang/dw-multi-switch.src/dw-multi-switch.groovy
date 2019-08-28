@@ -156,33 +156,23 @@ def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulat
 	if (encapsulatedCommand) {
 		zwaveEvent(encapsulatedCommand, null)
 	} 
-/*    def commandByte = cmd.commandByte
-    def epnum = commandByte[0];
-    def val = commandByte[4];
-    def state = commandByte[9];
-            log.debug "encapreport state: ${state}, val: ${val} && ep: ${epnum}"
-    if(state == 3 || val == 255) {
-    	//childDevice?.sendEvent(name: "switch", value: state == 3? "on" : "off")	
-        def value = "on"
-        ep ? changeSwitch(epnum, value) : []
-        log.debug "changeSwitch val: ${value} && ep: ${epnum}"
-    } else {
-    	def value = "off"
-        ep ? changeSwitch(epnum, value) : []
-        log.debug "changeSwitch val: ${value} && ep: ${epnum}"
-    }
-*/
+}
+
+
+def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cmd, ep = null) {
+//	log.debug "NotificationReport= ${cmd}" + (ep ? " from endpoint $ep" : "")
+    def value = cmd.event== 3? "on" : "off"
+    ep ? changeSwitch(ep, value) : []
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd, ep = null) {
 //	log.debug "Multichannel command ${cmd}" + (ep ? " from endpoint $ep" : "")
-    def value = cmd.parameter[5] == 3? "on" : "off"
-    ep = cmd.sourceEndPoint
-    ep ? changeSwitch(ep, value) : []
+	def encapsulatedCommand = cmd.encapsulatedCommand()
+	zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, ep = null) {
-	log.debug "Basic ${cmd}" + (ep ? " from endpoint $ep" : "")
+	log.debug "Basic ${cmd}:${ep}" + (ep ? " from endpoint $ep" : "")
 	def value = cmd.value ? "on" : "off"
 	ep ? changeSwitch(ep, value) : []
 }
@@ -255,7 +245,7 @@ def zwaveEvent(physicalgraph.zwave.commands.manufacturerspecificv2.ManufacturerS
 }
 
 private onOffCmd(value, endpoint) {
-//	log.debug "onoffCmd val:${value}, ep:${endpoint}"
+	log.debug "onoffCmd val:${value}, ep:${endpoint}"
 	delayBetween([
 			secureEncap(zwave.basicV1.basicSet(value: value), endpoint),
 		//	secureEncap(zwave.basicV1.basicGet(), endpoint),
