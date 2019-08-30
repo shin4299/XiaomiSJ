@@ -330,13 +330,9 @@ def refresh(endpoint) {
 		], 500)
     } else {
     	def cmds = []
-	    //cmds << zwave.configurationV1.configurationGet(parameterNumber: 1)
-    	//cmds << zwave.configurationV1.configurationGet(parameterNumber: 2)
-    	//cmds << zwave.configurationV1.configurationGet(parameterNumber: 3)
-          
-        //cmds << zwave.batteryV1.batteryGet()
-		//cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
-		//cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
+        cmds << zwave.batteryV1.batteryGet()
+		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
+		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
         
         sendCommands(cmds,1000)
 	}
