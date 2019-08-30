@@ -17,13 +17,15 @@ metadata {
 	definition(name: "DW Multi Switch", namespace: "ShinJjang", author: "ShinJjang", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {  //vid:"generic-temperature"
 	capability "Temperature Measurement"
 	capability "Relative Humidity Measurement"
+	capability "Tamper Alert"
 	capability "Sensor"
 	capability "Battery"
 	capability "Health Check"
-//    capability "Refresh"
+    capability "Refresh"
     capability "Configuration"
 
     attribute "lastCheckin", "String"
+    attribute "configReport", "string"
 
     fingerprint mfr:"018C", prod:"0059", model:"0001", deviceJoinName: "DW Switch 3CH"
     fingerprint mfr:"018C", prod:"0058", model:"0001", deviceJoinName: "DW Switch 2CH"
@@ -34,7 +36,11 @@ metadata {
     
 	}
 	simulator {}
-	preferences {}
+    preferences {
+		input "reportTime", "enum", title: "온습도 리포팅 주기", defaultValue: 600, options:[60: "1분", 120: "2분", 180: "3분", 300 : "5분", 600: "10분", 900 :"15분", 1200 :"20분", 1800 :"30분", 3600: "60분", 5400: "90분", 7200: "120분", 14400: "240분"], displayDuringSetup: true
+        input "minTemp", "enum", title: "리포팅 최소 온도변화량", defaultValue: 20, options:[10: "1℃", 11: "1.1℃", 12: "1.2℃", 13 : "1.3℃", 15: "1.5℃", 18 :"1.8℃", 20 :"2℃", 22 :"2.2℃", 25: "2.5℃", 28: "2.8℃", 30: "3℃"], displayDuringSetup: true
+        input "minHumi", "enum", title: "리포팅  최소 습도변화량", defaultValue: 10, options:[5: "5%", 6: "6%", 7: "7%", 8 : "8%", 9: "9%", 18 :"10%", 12 :"12%", 14 :"14%", 15: "15%", 18: "18%", 20: "20%"], displayDuringSetup: true
+    }
     tiles(scale: 2) {
         multiAttributeTile(name:"temperature", type:"generic", width:6, height:4) {
             tileAttribute("device.temperature", key:"PRIMARY_CONTROL"){
@@ -54,6 +60,10 @@ metadata {
                 attributeState("lastCheckin", label:'${currentValue}' 
                 )
             }
+			tileAttribute("device.configReport", key: "SECONDARY_CONTROL") {
+        		attributeState("configReport", label:'                                          ${currentValue}', defaultState: true)
+    		}            
+            
         }
         valueTile("temperature2", "device.temperature", inactiveLabel: false) {
         	state "temperature", label:'${currentValue}°', icon: "st.Weather.weather2",
@@ -87,6 +97,10 @@ metadata {
                 [value: 51, color: "#44b621"]
             ]
         }
+		standardTile("tamper", "device.tamper", height: 2, width: 2, decoration: "flat") {
+			state "clear", label: 'Good', action:"", icon:"st.nest.nest-leaf", backgroundColor: "#ffffff", nextState:"detected"
+			state "detected", label: '', action:"", icon:"st.thermostat.heat", backgroundColor: "#ff0000", nextState:"clear"
+		}
 		standardTile("refresh", "device.switch", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
@@ -94,7 +108,7 @@ metadata {
 			state "configure", label:'', action:"configure", icon:"st.secondary.configure"
 		}
         main("temperature2")
-        details(["temperature", "humidity", "battery"]) //
+        details(["temperature", "humidity", "battery", "tamper", "configure"]) //
     }
 }
 
@@ -129,7 +143,7 @@ def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv5.SensorMultilevelR
 	}
     log.debug "eventmap: ${map}"
     result << createEvent(map)
-    def now = new Date().format("yyyy-MM-dd HH:mm:ss", location.timeZone)
+    def now = new Date().format("MM-dd HH:mm", location.timeZone)
     result <<  createEvent(name: "lastCheckin", value: now)	
     
 	result
@@ -140,33 +154,96 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
     def result = []
 	def map = [name: "battery", unit: "%"]
 	if (cmd.batteryLevel == 0xFF) {
-		map.value = 1
-		map.descriptionText = "$device.displayName has a low battery"
+		map.value = 50
+		map.descriptionText = "$device.displayName 's battery capacity is unknown."
 	} else {
-		map.value = cmd.batteryLevel
+	    def batVolt = (cmd.batteryLevel - 10) / 19
+    	def batPer = Math.min(100, Math.round(batVolt * 100))   
+		map.value = batPer as int
 	}
     log.debug "eventmap: ${map}"
     result << createEvent(map)
 	result
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.manufacturerspecificv2.ManufacturerSpecificReport cmd) {
+	log.debug "manufacturerId:   ${cmd.manufacturerId}"
+	log.debug "productId:        ${cmd.productId}"
+	log.debug "productTypeId:    ${cmd.productTypeId}"
+	def msr = String.format("%04X-%04X-%04X", cmd.manufacturerId, cmd.productTypeId, cmd.productId)
+	updateDataValue("MSR", msr)
+	createEvent([descriptionText: "$device.displayName MSR: $msr", isStateChange: false])
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.versionv1.VersionReport cmd) {
+	log.debug "VersionReport"
+	log.debug "applicationVersion:		${cmd.applicationVersion}"
+	log.debug "applicationSubVersion:	${cmd.applicationSubVersion}"
+	log.debug "zWaveLibraryType:		${cmd.zWaveLibraryType}"
+	log.debug "zWaveProtocolVersion:	${cmd.zWaveProtocolVersion}"
+	log.debug "zWaveProtocolSubVersion: ${cmd.zWaveProtocolSubVersion}"
+    def fw = "${cmd.applicationVersion}.${cmd.applicationSubVersion}"
+	updateDataValue("fw", fw)
+	def text = "$device.displayName: firmware version: $fw, Z-Wave version: ${cmd.zWaveProtocolVersion}.${cmd.zWaveProtocolSubVersion}"
+	createEvent(descriptionText: text, isStateChange: false)
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.deviceresetlocallyv1.DeviceResetLocallyNotification cmd) {
+	log.info "${device.displayName}: received command: $cmd - device has reset itself"
+}
+
 def zwaveEvent(physicalgraph.zwave.commands.securityv1.SecurityMessageEncapsulation cmd, ep = null) {
-//	log.debug "Security Message Encap ${cmd}"
+	log.debug "Security Message Encap ${cmd}"
 	def encapsulatedCommand = cmd.encapsulatedCommand()
 	if (encapsulatedCommand) {
 		zwaveEvent(encapsulatedCommand, null)
 	} 
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.configurationv2.ConfigurationReport cmd){
+	log.debug "ConfigurationReport ${cmd}"
+    def result = []
+	def map = [:]
+	switch (cmd.parameterNumber) {
+		case 1:
+			state.reTime = cmd.scaledConfigurationValue/60 as int
+			break
+		
+		case 2:
+			state.minTemp = cmd.scaledConfigurationValue/10
+			break
+            
+		case 3:
+			state.minHumi = cmd.scaledConfigurationValue
+			break
+	}
+    log.debug "ConfigurationReport event: ${map}"
+    result <<  createEvent(name: "configReport", value: "C/S: ${state.reTime}min, ${state.minTemp}℃, ${state.minHumi}%")	
+    
+	result    
+}
 
 def zwaveEvent(physicalgraph.zwave.commands.notificationv3.NotificationReport cmd, ep = null) {
-//	log.debug "NotificationReport= ${cmd}" + (ep ? " from endpoint $ep" : "")
+	log.debug "NotificationReport= ${cmd}" + (ep ? " from endpoint $ep" : "")
+    if (cmd.notificationType == 8) {
     def value = cmd.event== 3? "on" : "off"
     ep ? changeSwitch(ep, value) : []
+    } else if (cmd.notificationType == 4) {
+    	def result = []
+		def map = [name: "tamper"]
+		if (cmd.event == 2 || cmd.event == 4) {
+			map.value = detected
+		} else if (cmd.event == 6) {
+			map.value = clear
+		}
+   		log.debug "NotificationReport eventmap: ${map}"
+    	result << createEvent(map)
+		result
+    }
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.multichannelv3.MultiChannelCmdEncap cmd, ep = null) {
-//	log.debug "Multichannel command ${cmd}" + (ep ? " from endpoint $ep" : "")
+	log.debug "Multichannel command ${cmd}" + (ep ? " from endpoint $ep" : "")
 	def encapsulatedCommand = cmd.encapsulatedCommand()
 	zwaveEvent(encapsulatedCommand, cmd.sourceEndPoint as Integer)
 }
@@ -235,15 +312,6 @@ def zwaveEvent(physicalgraph.zwave.Command cmd, ep) {
     log.debug "${device.displayName}: Unhandled ${cmd}" + (ep ? " from endpoint $ep" : "")
 }
 
-def zwaveEvent(physicalgraph.zwave.commands.manufacturerspecificv2.ManufacturerSpecificReport cmd) {
-	log.debug "manufacturerId:   ${cmd.manufacturerId}"
-	log.debug "productId:        ${cmd.productId}"
-	log.debug "productTypeId:    ${cmd.productTypeId}"
-	def msr = String.format("%04X-%04X-%04X", cmd.manufacturerId, cmd.productTypeId, cmd.productId)
-	updateDataValue("MSR", msr)
-	createEvent([descriptionText: "$device.displayName MSR: $msr", isStateChange: false])
-}
-
 private onOffCmd(value, endpoint) {
 	log.debug "onoffCmd val:${value}, ep:${endpoint}"
 	delayBetween([
@@ -254,16 +322,21 @@ private onOffCmd(value, endpoint) {
 }
 
 def refresh(endpoint) {
+	log.info "refresh()"
 	if(endpoint) {
-	delayBetween([
+		delayBetween([
 			secureEncap(zwave.basicV1.basicGet(), endpoint),
 			"delay 500"
-	], 500)
+		], 500)
     } else {
     	def cmds = []
-        cmds << zwave.batteryV1.batteryGet()
-		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
-		cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
+	    //cmds << zwave.configurationV1.configurationGet(parameterNumber: 1)
+    	//cmds << zwave.configurationV1.configurationGet(parameterNumber: 2)
+    	//cmds << zwave.configurationV1.configurationGet(parameterNumber: 3)
+          
+        //cmds << zwave.batteryV1.batteryGet()
+		//cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 1)
+		//cmds << zwave.sensorMultilevelV5.sensorMultilevelGet(sensorType: 5)
         
         sendCommands(cmds,1000)
 	}
@@ -298,15 +371,22 @@ def installed() {
 }
 
 def updated() {
-	sendHubCommand (zwave.multiChannelV3.multiChannelEndPointGet())
+	configure()
 }
 
 def configure() {
 	log.debug "Configure..."
-    	def cmds = []
+    	def msrdata = getDataValue("MSR")
+        def cmds = []
         cmds << zwave.multiChannelV3.multiChannelEndPointGet()
-		cmds << zwave.manufacturerSpecificV2.manufacturerSpecificGet()        
-        sendCommands(cmds,1000)    
+		if (msrdata == null) cmds << zwave.manufacturerSpecificV2.manufacturerSpecificGet()        
+        if (reportTime != null) cmds << zwave.configurationV1.configurationSet(parameterNumber: 1, size: 2, scaledConfigurationValue: reportTime as int)
+    	if (minTemp != null) cmds << zwave.configurationV1.configurationSet(parameterNumber: 2, size: 1, scaledConfigurationValue: minTemp as int)
+    	if (minHumi != null) cmds << zwave.configurationV1.configurationSet(parameterNumber: 3, size: 1, scaledConfigurationValue: minHumi as int)
+	    cmds << zwave.configurationV1.configurationGet(parameterNumber: 1)
+	    cmds << zwave.configurationV1.configurationGet(parameterNumber: 2)
+	    cmds << zwave.configurationV1.configurationGet(parameterNumber: 3)
+    	sendCommands(cmds,1000)    
 }
 
 private secure(cmd) {
@@ -351,3 +431,4 @@ private addChildSwitches(numberOfSwitches) {
 		}
 	}
 }
+
