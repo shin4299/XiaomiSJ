@@ -29,8 +29,6 @@ metadata {
         
     command "levelOpenClose"
     command "Pause"       
-//    command "set1"       
-//    command "set2"       
 
         fingerprint endpointId: "0x01", profileId: "0104", deviceId: "0202", inClusters: "0000, 0003, 0102, 000D, 0013, 0001", outClusters: "0003, 000A", manufacturer: "LUMI", model: "lumi.curtain.hagl04", deviceJoinName: "Xiaomi Curtain B1"
     }
@@ -70,12 +68,6 @@ metadata {
         standardTile("refresh", "command.refresh", width: 2, height: 2, inactiveLabel: false, decoration: "flat") {
             state "default", label: " ", action: "refresh.refresh", icon: "https://www.shareicon.net/data/128x128/2016/06/27/623885_home_256x256.png"
         }
-/*        standardTile("set1", "set1", width: 2, height: 2, decoration: "flat") {
-            state "default", label: "set1", action:"set1", icon:"st.Home.home2"
-        }
-        standardTile("set2", "set1", width: 2, height: 2, decoration: "flat") {
-            state "default", label: "set2", action:"set2", icon:"st.Home.home2"
-        }*/
         valueTile("battery", "device.battery", inactiveLabel: false, width: 2, height: 2) {
             state "battery", label:'${currentValue}%', unit:"%", icon:"https://raw.githubusercontent.com/bspranger/Xiaomi/master/images/XiaomiBattery.png",
             backgroundColors:[
@@ -237,11 +229,3 @@ def configure() {
 
     return refresh()
 }
-/*
-def set1() {
-    log.debug "set1()"     
-}     
-     
-def set2() {
-    log.debug "set2()"
-}*/
