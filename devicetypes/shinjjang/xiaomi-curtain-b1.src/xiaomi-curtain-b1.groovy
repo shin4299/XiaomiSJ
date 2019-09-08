@@ -182,6 +182,15 @@ def open() {
 	setLevel(100)    
 }
 
+def on() {
+	setLevel(100)
+}
+
+
+def off() {
+	setLevel(0)
+}
+
 
 def Pause() {
     log.info "stop()"
