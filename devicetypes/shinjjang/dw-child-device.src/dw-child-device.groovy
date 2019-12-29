@@ -12,7 +12,7 @@
  *
  */
 metadata {
-	definition (name: "DW Child Device", namespace: "ShinJjang", author: "ShinJjang", mnmn: "SmartThings", vid: "generic-switch") {
+	definition (name: "DW Child Device", namespace: "ShinJjang", author: "ShinJjang", mnmn: "SmartThings", runLocally: true, minHubCoreVersion: '000.017.0012', executeCommandsLocally: false, vid: "generic-switch") {
 		capability "Switch"
 		capability "Refresh"
 		capability "Actuator"

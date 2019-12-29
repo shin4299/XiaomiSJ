@@ -14,7 +14,7 @@
  *
  */
 metadata {
-	definition(name: "DW Multi Switch", namespace: "ShinJjang", author: "ShinJjang", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat") {  //vid:"generic-temperature"
+	definition(name: "DW Multi Switch", namespace: "ShinJjang", author: "ShinJjang", mnmn: "SmartThings", ocfDeviceType: "oic.d.thermostat", runLocally: true, minHubCoreVersion: '000.017.0012', executeCommandsLocally: false) {  //vid:"generic-temperature"
 	capability "Temperature Measurement"
 	capability "Relative Humidity Measurement"
 	capability "Tamper Alert"
@@ -418,9 +418,7 @@ private addChildSwitches(numberOfSwitches) {
 			addChildDevice("DW Child Device", childDni, device.getHub().getId(), [
 					completedSetup: true,
 					label         : componentLabel,
-					isComponent   : false,
-					componentName : "switch$endpoint",
-					componentLabel: "Switch $endpoint"
+					isComponent   : false
 			])
 		} catch(Exception e) {
 			log.debug "Exception: ${e}"
