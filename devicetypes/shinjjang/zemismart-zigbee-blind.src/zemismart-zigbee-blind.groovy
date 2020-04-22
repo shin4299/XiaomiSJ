@@ -28,6 +28,7 @@ metadata {
 		command "pause"
         
         attribute "Direction", "enum", ["Reverse","Forward"]
+        attribute "position", "enum", ["Fix","NonFix"]
         attribute "remote", "enum", ["Reverse","Forward"]
 
 		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 0003, 0004, 0005, 0006", outClusters: "0019", manufacturer: "_TYST11_wmcdj3aq", model: "mcdj3aq", deviceJoinName: "Zemismart Zigbee Blind"
@@ -36,6 +37,7 @@ metadata {
 	preferences {
 		input "preset", "number", title: "Preset position", description: "Set the window shade preset position", defaultValue: 50, range: "0..100", required: false, displayDuringSetup: false
         input name: "Direction", type: "enum", title: "Direction Set", defaultValue: "00", options:["01": "Reverse", "00": "Forward"], displayDuringSetup: true
+        input name: "position", type: "enum", title: "Position Fix(0 <-> 100)", defaultValue: 0, options:[100: "Fix", 0: "NonFix"], displayDuringSetup: true
         input name: "remote", type: "enum", title: "RC opening,closing Change", defaultValue: 0, options:[100: "Reverse", 0: "Forward"], displayDuringSetup: true
 	}
 
@@ -104,12 +106,16 @@ def parse(String description) {
                         }
                     	break
 					case 514: // 0x02 0x02: Started moving to position (triggered from Zigbee)
-                    	def pos = zigbee.convertHexToInt(descMap.data[9])
+                    	def positionVal = zigbee.convertHexToInt(descMap.data[9])
+                        def positionFix = position as int
+                        def pos = Math.abs(positionVal - positionFix)
 						log.debug "moving to position :"+pos
                         levelEventMoving(pos)
                         break
 					case 515: // 0x02 0x03: Arrived at position
-                    	def pos = zigbee.convertHexToInt(descMap.data[9])
+                    	def positionVal = zigbee.convertHexToInt(descMap.data[9])
+                        def positionFix = position as int
+                        def pos = Math.abs(positionVal - positionFix)
                     	log.debug "arrived at position :"+pos
                     	levelEventArrived(pos)
                         break
@@ -154,7 +160,7 @@ def close() {
     	sendEvent(name: "windowShade", value: "closed")
         return
     }
-	sendTuyaCommand("0104", "00", "0100")
+	sendTuyaCommand("0104", "00", "0102")
 }
 
 def open() {
@@ -164,7 +170,7 @@ def open() {
     	sendEvent(name: "windowShade", value: "open")
         return
     }
-	sendTuyaCommand("0104", "00", "0102")
+	sendTuyaCommand("0104", "00", "0101")
 }
 
 def pause() {
@@ -196,6 +202,7 @@ def installed() {
 def updated() {
 	def val = Direction
     sendEvent([name:"Direction", value: (val == "00" ? "Forward" : "Reverse")])    
+    sendEvent([name:"position", value: (val == 0 ? "NonFix" : "Fix")])    
     sendEvent([name:"remote", value: (val == 0 ? "Forward" : "Reverse")])    
 	DirectionSet(val)
 }	
