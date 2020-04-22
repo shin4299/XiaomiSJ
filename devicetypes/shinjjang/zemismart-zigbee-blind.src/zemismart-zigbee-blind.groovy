@@ -36,9 +36,9 @@ metadata {
 
 	preferences {
 		input "preset", "number", title: "Preset position", description: "Set the window shade preset position", defaultValue: 50, range: "0..100", required: false, displayDuringSetup: false
-        input name: "Direction", type: "enum", title: "Direction Set", defaultValue: "00", options:["01": "Reverse", "00": "Forward"], displayDuringSetup: true
-        input name: "OCcommand", type: "enum", title: "Replace Open and Close commands", defaultValue: 0, options:[2: "Replace", 0: "Original"], displayDuringSetup: true
-        input name: "remote", type: "enum", title: "RC opening,closing Change", defaultValue: 0, options:[100: "Reverse", 0: "Forward"], displayDuringSetup: true
+        input name: "Direction", type: "enum", title: "Direction Set", defaultValue: "00", options:["01": "Reverse", "00": "Forward"], required: true, displayDuringSetup: true
+        input name: "OCcommand", type: "enum", title: "Replace Open and Close commands", defaultValue: 0, options:[2: "Replace", 0: "Original"], required: true, displayDuringSetup: true
+        input name: "remote", type: "enum", title: "RC opening,closing Change", defaultValue: 0, options:[1: "Reverse", 0: "Forward"], required: true, displayDuringSetup: true
 	}
 
 	tiles(scale: 2) {
@@ -47,7 +47,7 @@ metadata {
 				attributeState "open", label: 'Open', action: "close", icon: "http://www.ezex.co.kr/img/st/window_open.png", backgroundColor: "#00A0DC", nextState: "closing"
 				attributeState "closed", label: 'Closed', action: "open", icon: "http://www.ezex.co.kr/img/st/window_close.png", backgroundColor: "#ffffff", nextState: "opening"
 				attributeState "partially open", label: 'Partially open', action: "close", icon: "http://www.ezex.co.kr/img/st/window_open.png", backgroundColor: "#d45614", nextState: "closing"
-				attributeState "opening", label: 'Opening', action: "colse", icon: "http://www.ezex.co.kr/img/st/window_open.png", backgroundColor: "#00A0DC", nextState: "closing"
+				attributeState "opening", label: 'Opening', action: "close", icon: "http://www.ezex.co.kr/img/st/window_open.png", backgroundColor: "#00A0DC", nextState: "closing"
 				attributeState "closing", label: 'Closing', action: "open", icon: "http://www.ezex.co.kr/img/st/window_close.png", backgroundColor: "#ffffff", nextState: "opening"
 			}
 		}
@@ -80,40 +80,38 @@ def parse(String description) {
 	if (description?.startsWith('catchall:') || description?.startsWith('read attr -')) {
 		Map descMap = zigbee.parseDescriptionAsMap(description)        
 		if (descMap?.clusterInt==CLUSTER_TUYA) {
-        	log.debug descMap
+        	//log.debug descMap
 			if ( descMap?.command == "01" || descMap?.command == "02" ) {
 				def dp = zigbee.convertHexToInt(descMap?.data[3]+descMap?.data[2])
                 log.debug "dp = " + dp
 				switch (dp) {
 					case 1025: // 0x04 0x01: Confirm opening/closing/stopping (triggered from Zigbee)
                     	def data = descMap.data[6]
-                    	if (descMap.data[6] == "00") {
-                        	log.debug "opening"
-                            levelEventMoving(100)
-                        } else if (descMap.data[6] == "02") {
-                        	log.debug "colsing"
-                            levelEventMoving(0)
-                        }
+						sendEvent([name:"windowShade", value: (data == "00" ? "opening":"closing")])
+                        log.debug "App control" + (data == "00" ? "opening":"closing")
                     	break
 					case 1031: // 0x04 0x07: Confirm opening/closing/stopping (triggered from remote)
-                    	def data = descMap.data[6]
+                        def parData = descMap.data[6] as int
                         def remoteVal = remote as int
-                        log.debug "remoteVal=${remoteVal}"
-                    	if (descMap.data[6] == "01") {
-                            levelEventMoving(remoteVal - 0)
-                        } else if (descMap.data[6] == "00") {
-                            levelEventMoving(100-remoteVal)
-                        }
+                        def data = Math.abs(parData - remoteVal)
+						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
+                        log.debug "Remote control" + (data == "00" ? "opening":"closing")
                     	break
 					case 514: // 0x02 0x02: Started moving to position (triggered from Zigbee)
-                    	def pos = zigbee.convertHexToInt(descMap.data[9])
-						log.debug "moving to position :"+pos
-                        levelEventMoving(pos)
+                    	def setLevel = zigbee.convertHexToInt(descMap.data[9])
+                        def lastLevel = device.currentValue("level")
+						sendEvent([name:"windowShade", value: (setLevel >= lastLevel ? "opening":"closing")])
+                        log.debug "Remote control" + (setLevel >= lastLevel ? "opening":"closing")
                         break
 					case 515: // 0x02 0x03: Arrived at position
                     	def pos = zigbee.convertHexToInt(descMap.data[9])
                     	log.debug "arrived at position :"+pos
-                    	levelEventArrived(pos)
+                    	if (pos > 0 && pos <100) {
+                        	sendEvent(name: "windowShade", value: "partially open")
+                        } else {
+                        	sendEvent([name:"windowShade", value: (pos == 100 ? "open":"closed")])
+                        }
+                        sendEvent(name: "level", value: (pos))
                         break
 				}
 			}
@@ -121,41 +119,8 @@ def parse(String description) {
 	}
 }
 
-private levelEventMoving(currentLevel) {
-	def lastLevel = device.currentValue("level")
-	log.debug "levelEventMoving - currentLevel: ${currentLevel} lastLevel: ${lastLevel}"
-	if (lastLevel == "undefined" || currentLevel == lastLevel) { //Ignore invalid reports
-		log.debug "Ignore invalid reports"
-	} else {
-		if (lastLevel < currentLevel) {
-			sendEvent([name:"windowShade", value: "opening"])
-		} else if (lastLevel > currentLevel) {
-			sendEvent([name:"windowShade", value: "closing"])
-		}
-    }
-}
-
-private levelEventArrived(level) {
-	if (level == 0) {
-    	sendEvent(name: "windowShade", value: "closed")
-    } else if (level == 100) {
-    	sendEvent(name: "windowShade", value: "open")
-    } else if (level > 0 && level < 100) {
-		sendEvent(name: "windowShade", value: "partially open")
-    } else {
-    	sendEvent(name: "windowShade", value: "unknown")
-        return
-    }
-    sendEvent(name: "level", value: (level))
-}
-
 def close() {
 	log.info "close()"
-	def currentLevel = device.currentValue("level")
-    if (currentLevel == 0) {
-    	sendEvent(name: "windowShade", value: "closed")
-        return
-    }
     def cm = OCcommand as int
     def val = Math.abs(0 - cm)
 	sendTuyaCommand("0104", "00", "010" + val)
@@ -163,11 +128,6 @@ def close() {
 
 def open() {
 	log.info "open()"
-    def currentLevel = device.currentValue("level")
-    if (currentLevel == 100) {
-    	sendEvent(name: "windowShade", value: "open")
-        return
-    }
     def cm = OCcommand as int
     def val = Math.abs(2 - cm)
 	sendTuyaCommand("0104", "00", "010" + val)
