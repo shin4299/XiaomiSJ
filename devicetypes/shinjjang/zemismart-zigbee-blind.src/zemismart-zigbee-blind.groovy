@@ -154,7 +154,7 @@ def close() {
     	sendEvent(name: "windowShade", value: "closed")
         return
     }
-	sendTuyaCommand("0104", "00", "0102")
+	sendTuyaCommand("0104", "00", "0100")
 }
 
 def open() {
@@ -164,7 +164,7 @@ def open() {
     	sendEvent(name: "windowShade", value: "open")
         return
     }
-	sendTuyaCommand("0104", "00", "0100")
+	sendTuyaCommand("0104", "00", "0102")
 }
 
 def pause() {
