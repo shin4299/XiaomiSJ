@@ -28,6 +28,7 @@ metadata {
 		command "pause"
         
         attribute "Direction", "enum", ["Reverse","Forward"]
+        attribute "remote", "enum", ["Reverse","Forward"]
 
 		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 0003, 0004, 0005, 0006", outClusters: "0019", manufacturer: "_TYST11_wmcdj3aq", model: "mcdj3aq", deviceJoinName: "Zemismart Zigbee Blind"
 	}
@@ -35,6 +36,7 @@ metadata {
 	preferences {
 		input "preset", "number", title: "Preset position", description: "Set the window shade preset position", defaultValue: 50, range: "0..100", required: false, displayDuringSetup: false
         input name: "Direction", type: "enum", title: "Direction Set", defaultValue: "00", options:["01": "Reverse", "00": "Forward"], displayDuringSetup: true
+        input name: "remote", type: "enum", title: "RC opening,closing Change", defaultValue: 0, options:[100: "Reverse", 0: "Forward"], displayDuringSetup: true
 	}
 
 	tiles(scale: 2) {
@@ -93,12 +95,12 @@ def parse(String description) {
                     	break
 					case 1031: // 0x04 0x07: Confirm opening/closing/stopping (triggered from remote)
                     	def data = descMap.data[6]
+                        def remoteVal = remote as int
+                        log.debug "remoteVal=${remoteVal}"
                     	if (descMap.data[6] == "01") {
-                        	log.debug "closing"
-                            levelEventMoving(0)
+                            levelEventMoving(remoteVal - 0)
                         } else if (descMap.data[6] == "00") {
-                        	log.debug "opening"
-                            levelEventMoving(100)
+                            levelEventMoving(100-remoteVal)
                         }
                     	break
 					case 514: // 0x02 0x02: Started moving to position (triggered from Zigbee)
@@ -188,12 +190,13 @@ def presetPosition() {
 
 def installed() {
 	sendEvent(name: "supportedWindowShadeCommands", value: JsonOutput.toJson(["open", "close", "pause"]), displayed: false)
-    
+    updated()
 }
 
 def updated() {
 	def val = Direction
     sendEvent([name:"Direction", value: (val == "00" ? "Forward" : "Reverse")])    
+    sendEvent([name:"remote", value: (val == 0 ? "Forward" : "Reverse")])    
 	DirectionSet(val)
 }	
 
