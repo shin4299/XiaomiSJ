@@ -27,7 +27,7 @@ metadata {
 
 		command "pause"
         
-        attribute "Direction", "enum", ["Reverse","Forward"]
+        attribute "Direction", "enum", ["01","00"]
         attribute "OCcommand", "enum", ["Replace","Original"]
         attribute "remote", "enum", ["Reverse","Forward"]
 
@@ -36,9 +36,9 @@ metadata {
 
 	preferences {
 		input "preset", "number", title: "Preset position", description: "Set the window shade preset position", defaultValue: 50, range: "0..100", required: false, displayDuringSetup: false
-        input name: "Direction", type: "enum", title: "Direction Set", defaultValue: "00", options:["01": "Reverse", "00": "Forward"], required: true, displayDuringSetup: true
-        input name: "OCcommand", type: "enum", title: "Replace Open and Close commands", defaultValue: 0, options:[2: "Replace", 0: "Original"], required: true, displayDuringSetup: true
-        input name: "remote", type: "enum", title: "RC opening,closing Change", defaultValue: 0, options:[1: "Reverse", 0: "Forward"], required: true, displayDuringSetup: true
+        input name: "Direction", type: "enum", title: "Direction Set", options:["01": "Reverse", "00": "Forward"], required: true, displayDuringSetup: true
+        input name: "OCcommand", type: "enum", title: "Replace Open and Close commands", options:["2": "Replace", "0": "Original"], required: true, displayDuringSetup: true
+        input name: "remote", type: "enum", title: "RC opening,closing Change", options:["1": "Reverse", "0": "Forward"], required: true, displayDuringSetup: true
 	}
 
 	tiles(scale: 2) {
@@ -80,7 +80,7 @@ def parse(String description) {
 	if (description?.startsWith('catchall:') || description?.startsWith('read attr -')) {
 		Map descMap = zigbee.parseDescriptionAsMap(description)        
 		if (descMap?.clusterInt==CLUSTER_TUYA) {
-        	//log.debug descMap
+        	log.debug descMap
 			if ( descMap?.command == "01" || descMap?.command == "02" ) {
 				def dp = zigbee.convertHexToInt(descMap?.data[3]+descMap?.data[2])
                 log.debug "dp = " + dp
@@ -121,22 +121,22 @@ def parse(String description) {
 
 def close() {
 	log.info "close()"
-    def cm = OCcommand as int
-    def val = Math.abs(0 - cm)
+    def cm = (OCcommand ?:"0") as int
+    log.debug "cm=${cm}"
+    def val = Math.abs(2 - cm)
 	sendTuyaCommand("0104", "00", "010" + val)
 }
 
 def open() {
 	log.info "open()"
-    def cm = OCcommand as int
-    def val = Math.abs(2 - cm)
+    def cm = (OCcommand ?:"0") as int
+    def val = Math.abs(0 - cm)
 	sendTuyaCommand("0104", "00", "010" + val)
 }
 
 def pause() {
 	log.info "pause()"
 	sendTuyaCommand("0104", "00", "0101")
-    
 }
 
 def setLevel(data, rate = null) {
@@ -149,6 +149,9 @@ def setLevel(data, rate = null) {
 	sendTuyaCommand("0202", "00", "04000000"+zigbee.convertToHexString(data, 2))
 }
 
+def refresh() {
+	zigbee.readAttribute(CLUSTER_TUYA, 0x00, )
+}
 
 def presetPosition() {
     setLevel(preset ?: 50)
@@ -156,15 +159,11 @@ def presetPosition() {
 
 def installed() {
 	sendEvent(name: "supportedWindowShadeCommands", value: JsonOutput.toJson(["open", "close", "pause"]), displayed: false)
-    updated()
 }
 
 def updated() {
-	def val = Direction
-    sendEvent([name:"Direction", value: (val == "00" ? "Forward" : "Reverse")])    
-    sendEvent([name:"OCcommand", value: (val == 0 ? "Original" : "Replace")])    
-    sendEvent([name:"remote", value: (val == 0 ? "Forward" : "Reverse")])    
-	DirectionSet(val)
+	log.debug "val(${Direction}),valC(${OCcommand}),valR(${remote})"
+	DirectionSet(Direction ?:"00")
 }	
 
 def DirectionSet(Dval) {
@@ -177,7 +176,7 @@ def configure() {
 }
 
 private sendTuyaCommand(dp, fn, data) {
-	log.info "${dp},${fn},${data}"
+	log.info "${zigbee.convertToHexString(rand(256), 2)}=${dp},${fn},${data}"
 	zigbee.command(CLUSTER_TUYA, SETDATA, "00" + zigbee.convertToHexString(rand(256), 2) + dp + fn + data)
 }
 
