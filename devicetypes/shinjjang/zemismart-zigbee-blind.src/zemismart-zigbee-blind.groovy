@@ -27,7 +27,7 @@ metadata {
 
 		command "pause"
         
-        attribute "Direction", "enum", ["01","00"]
+        attribute "Direction", "enum", ["Reverse","Forward"]
         attribute "OCcommand", "enum", ["Replace","Original"]
         attribute "remote", "enum", ["Reverse","Forward"]
 
