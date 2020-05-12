@@ -29,6 +29,7 @@ metadata {
         
         attribute "Direction", "enum", ["Reverse","Forward"]
         attribute "OCcommand", "enum", ["Replace","Original"]
+        attribute "stapp", "enum", ["Reverse","Forward"]
         attribute "remote", "enum", ["Reverse","Forward"]
 
 		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 0003, 0004, 0005, 0006", outClusters: "0019", manufacturer: "_TYST11_wmcdj3aq", model: "mcdj3aq", deviceJoinName: "Zemismart Zigbee Blind"
@@ -40,6 +41,7 @@ metadata {
 		input "preset", "number", title: "Preset position", description: "Set the window shade preset position", defaultValue: 50, range: "0..100", required: false, displayDuringSetup: false
         input name: "Direction", type: "enum", title: "Direction Set", options:["01": "Reverse", "00": "Forward"], required: true, displayDuringSetup: true
         input name: "OCcommand", type: "enum", title: "Replace Open and Close commands", options:["2": "Replace", "0": "Original"], required: true, displayDuringSetup: true
+        input name: "stapp", type: "enum", title: "app opening,closing Change", options:["1": "Reverse", "0": "Forward"], required: true, displayDuringSetup: true
         input name: "remote", type: "enum", title: "RC opening,closing Change", options:["1": "Reverse", "0": "Forward"], required: true, displayDuringSetup: true
 	}
 
@@ -88,16 +90,21 @@ def parse(String description) {
                 log.debug "dp = " + dp
 				switch (dp) {
 					case 1025: // 0x04 0x01: Confirm opening/closing/stopping (triggered from Zigbee)
-                    	def data = descMap.data[6]
+/*                    	def data = descMap.data[6]
 						sendEvent([name:"windowShade", value: (data == "00" ? "opening":"closing")])
-                        log.debug "App control" + (data == "00" ? "opening":"closing")
+                        log.debug "App control" + (data == "00" ? "opening":"closing")*/
+                        def parData = descMap.data[6] as int
+                        def stappVal = (stapp ?:"0") as int
+                        def data = Math.abs(parData - stappVal)
+						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
+                        log.debug "App control" + (data == 0 ? "opening":"closing")
                     	break
 					case 1031: // 0x04 0x07: Confirm opening/closing/stopping (triggered from remote)
                         def parData = descMap.data[6] as int
                         def remoteVal = remote as int
                         def data = Math.abs(parData - remoteVal)
 						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
-                        log.debug "Remote control" + (data == "00" ? "opening":"closing")
+                        log.debug "Remote control" + (data == 0 ? "opening":"closing")
                     	break
 					case 514: // 0x02 0x02: Started moving to position (triggered from Zigbee)
                     	def setLevel = zigbee.convertHexToInt(descMap.data[9])
