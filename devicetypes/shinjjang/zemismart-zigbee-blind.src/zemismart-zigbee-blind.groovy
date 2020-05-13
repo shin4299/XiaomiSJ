@@ -95,8 +95,8 @@ def parse(String description) {
                         def stappVal = (stapp ?:"0") as int
                         def data = Math.abs(parData - stappVal)
 						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
-                        log.debug "App control" + (data == 0 ? "opening":"closing")
-                        }
+                        log.debug "App control=parData_${parData},STapp_${stappVal},data_${data}=" + (data == 0 ? "opening":"closing")
+			}
                     	break
 					case 1031: // 0x04 0x07: Confirm opening/closing/stopping (triggered from remote)
                         def parData = descMap.data[6] as int
