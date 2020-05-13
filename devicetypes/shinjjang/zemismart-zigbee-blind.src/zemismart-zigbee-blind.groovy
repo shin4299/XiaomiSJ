@@ -89,16 +89,13 @@ def parse(String description) {
 				def dp = zigbee.convertHexToInt(descMap?.data[3]+descMap?.data[2])
                 log.debug "dp = " + dp
 				switch (dp) {
-					case 1025: // 0x04 0x01: Confirm opening/closing/stopping (triggered from Zigbee)
-                    	/*def data = descMap.data[6]
-						sendEvent([name:"windowShade", value: (data == "00" ? "opening":"closing")])
-                        log.debug "App control" + (data == "00" ? "opening":"closing")*/
+					case 1025: 
                         def parData = descMap.data[6] as int
                         if(parData != 1){
                         def stappVal = (stapp ?:"0") as int
                         def data = Math.abs(parData - stappVal)
 						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
-                        log.debug "App control=parData_${parData},STapp_${stappVal},data_${data}=" + (data == 0 ? "opening":"closing")
+                        log.debug "App control=" + (data == 0 ? "opening":"closing")
                         }
                     	break
 					case 1031: // 0x04 0x07: Confirm opening/closing/stopping (triggered from remote)
@@ -106,13 +103,13 @@ def parse(String description) {
                         def remoteVal = remote as int
                         def data = Math.abs(parData - remoteVal)
 						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
-                        log.debug "Remote control" + (data == 0 ? "opening":"closing")
+                        log.debug "Remote control=" + (data == 0 ? "opening":"closing")
                     	break
 					case 514: // 0x02 0x02: Started moving to position (triggered from Zigbee)
                     	def setLevel = zigbee.convertHexToInt(descMap.data[9])
                         def lastLevel = device.currentValue("level")
 						sendEvent([name:"windowShade", value: (setLevel >= lastLevel ? "opening":"closing")])
-                        log.debug "Remote control" + (setLevel >= lastLevel ? "opening":"closing")
+                        log.debug "Remote control=" + (setLevel >= lastLevel ? "opening":"closing")
                         break
 					case 515: // 0x02 0x03: Arrived at position
                     	def pos = zigbee.convertHexToInt(descMap.data[9])
