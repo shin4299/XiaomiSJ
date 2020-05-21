@@ -24,8 +24,10 @@ metadata {
 		capability "Window Shade"
 		capability "Window Shade Preset"
 		capability "Switch Level"
+		capability "Sensor"
 
 		command "pause"
+		command "levelOpenClose"
         
         attribute "Direction", "enum", ["Reverse","Forward"]
         attribute "OCcommand", "enum", ["Replace","Original"]
