@@ -96,7 +96,7 @@ def parse(String description) {
                         if(parData != 1){
                         def stappVal = (stapp ?:"0") as int
                         def data = Math.abs(parData - stappVal)
-						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
+						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing"), displayed: true])
                         log.debug "App control=" + (data == 0 ? "opening":"closing")
                         }
                     	break
@@ -104,13 +104,13 @@ def parse(String description) {
                         def parData = descMap.data[6] as int
                         def remoteVal = remote as int
                         def data = Math.abs(parData - remoteVal)
-						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing")])
+						sendEvent([name:"windowShade", value: (data == 0 ? "opening":"closing"), displayed: true])
                         log.debug "Remote control=" + (data == 0 ? "opening":"closing")
                     	break
 					case 514: // 0x02 0x02: Started moving to position (triggered from Zigbee)
                     	def setLevel = zigbee.convertHexToInt(descMap.data[9])
                         def lastLevel = device.currentValue("level")
-						sendEvent([name:"windowShade", value: (setLevel >= lastLevel ? "opening":"closing")])
+						sendEvent([name:"windowShade", value: (setLevel >= lastLevel ? "opening":"closing"), displayed: true])
                         log.debug "Remote control=" + (setLevel >= lastLevel ? "opening":"closing")
                         break
 					case 515: // 0x02 0x03: Arrived at position
@@ -119,7 +119,7 @@ def parse(String description) {
                     	if (pos > 0 && pos <100) {
                         	sendEvent(name: "windowShade", value: "partially open")
                         } else {
-                        	sendEvent([name:"windowShade", value: (pos == 100 ? "open":"closed")])
+                        	sendEvent([name:"windowShade", value: (pos == 100 ? "open":"closed"), displayed: true])
                         }
                         sendEvent(name: "level", value: (pos))
                         break
@@ -153,7 +153,7 @@ def setLevel(data, rate = null) {
 	log.info "setLevel("+data+")"
     def currentLevel = device.currentValue("level")
     if (currentLevel == data) {
-    	sendEvent(name: "level", value: currentLevel)
+    	sendEvent(name: "level", value: currentLevel, displayed: true)
         return
     }
 	sendTuyaCommand("0202", "00", "04000000"+zigbee.convertToHexString(data, 2))
