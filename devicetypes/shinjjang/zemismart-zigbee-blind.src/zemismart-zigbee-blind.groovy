@@ -37,6 +37,7 @@ metadata {
 		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 0003, 0004, 0005, 0006", outClusters: "0019", manufacturer: "_TYST11_wmcdj3aq", model: "mcdj3aq", deviceJoinName: "Zemismart Zigbee Blind"
 		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 0003, 0004, 0005, 0006", outClusters: "0019", manufacturer: "_TYST11_cowvfr", model: "owvfni3", deviceJoinName: "Zemismart Zigbee Blind"
 		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 0003, 0004, 0005, 0006", outClusters: "0019", deviceJoinName: "Zemismart Zigbee Blind"
+		fingerprint endpointId: "0x01", profileId: "0104", inClusters: "0000, 000A, 0004, 0005, EF00", outClusters: "0019", manufacturer: "_TZE200_wmcdj3aq", model: "TS0601", deviceJoinName: "Zemismart Zigbee Blind"
 	}
 
 	preferences {
