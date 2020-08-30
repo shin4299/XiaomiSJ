@@ -389,6 +389,10 @@ def configure() {
     	sendCommands(cmds,1000)    
 }
 
+def configureChild() {
+	sendEventToChild(createEvent(name: "DeviceWatch-Enroll", value: [protocol: "zwave", scheme:"untracked"].encodeAsJson(), displayed: false), true)
+}
+
 private secure(cmd) {
 	if(zwaveInfo.zw.endsWith("s")) {
 		zwave.securityV1.securityMessageEncapsulation().encapsulate(cmd).format()
