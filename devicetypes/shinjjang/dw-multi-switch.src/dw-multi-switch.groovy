@@ -361,8 +361,12 @@ def childRefresh(deviceNetworkId) {
 }
 
 def installed() {
-	log.debug "Installed ${device.displayName}"
-	sendEvent(name: "checkInterval", value: 2 * 15 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
+	log.debug "Installed ${device.displayName}, reportingInterval '${reportTime}'"
+	if (reportTime != null) {
+		sendEvent(name: "checkInterval", value: 2 * (reportTime as int) + 10 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
+	} else {
+		sendEvent(name: "checkInterval", value: 2 * 15 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID])
+	}	
 	refresh()
 }
 
