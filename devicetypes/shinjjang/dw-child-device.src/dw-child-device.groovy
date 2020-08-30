@@ -36,10 +36,17 @@ metadata {
 }
 
 def installed() {
-	sendEvent(name: "checkInterval", value: 2 * 15 * 60 + 2 * 60, displayed: false, data: [protocol: "zwave", hubHardwareId: device.hub.hardwareID, offlinePingable: "1"])
-    refresh()
+	configure()
 }
 
+def updated() {
+	configure()
+}
+
+def configure() {
+	parent.configureChild()
+	refresh()
+}
 def on() {
 	log.info "on"
 	parent.childOnOff(device.deviceNetworkId, 0xFF)
