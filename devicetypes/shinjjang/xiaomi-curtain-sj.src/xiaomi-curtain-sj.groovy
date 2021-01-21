@@ -91,7 +91,7 @@ def parse(String description) {
 				long theValue = Long.parseLong(parseMap["value"], 16)
 				float floatValue = Float.intBitsToFloat(theValue.intValue());
 				def windowShadeStatus = ""
-			int curtainLevel = floatValue.intValue()
+				int curtainLevel = floatValue.intValue()
 				if(mode == true) {
 					if (theValue > 0x42c70000) {
 						log.debug "Just Closed"
