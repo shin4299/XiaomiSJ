@@ -166,15 +166,12 @@ def parse(String description) {
 	}
 }
 
-def installed() {
+def updated() {
+	sendEvent(name: "openlevel", value: openInt)
 	sendEvent(name: "supportedWindowShadeCommands", value: JsonOutput.toJson(["open", "close", "pause"]), displayed: false)
 	def cmds = zigbee.command(0x0004, 0x04)
 	cmds.each { sendHubCommand(new physicalgraph.device.HubAction(it)) }
 }
-
-def updated() {
-	sendEvent(name: "openlevel", value: openInt)
-}	
 
 def on() {
 	setLevel(100)
@@ -196,13 +193,13 @@ def open() {
 
 def pause() {
 	log.info "pause()"
-   zigbee.command(0x0102, 0x02)
+	zigbee.command(0x0102, 0x02)
 }
 
 def checkP() {
 	if(state.checkS == 1) {
 		sendHubCommand(refresh().collect { new physicalgraph.device.HubAction(it) }, 0)
-		}
+	}
 }
 
 def setLevel(level) {
