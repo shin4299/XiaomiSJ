@@ -205,7 +205,7 @@ def volt() {
 //	"st rattr 0x${device.deviceNetworkId} ${1} 0x000A 0x0001"
 }
 
-def installed() {
+def updated() {
 	def cmds = zigbee.command(0x0004, 0x04)
 	cmds.each { sendHubCommand(new physicalgraph.device.HubAction(it)) }
 }
