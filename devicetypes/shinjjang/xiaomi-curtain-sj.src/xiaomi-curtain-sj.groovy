@@ -227,7 +227,7 @@ def shadeAction(level) {
 	}
 }
 
-def installed() {
+def updated() {
 	sendEvent(name: "supportedWindowShadeCommands", value: JsonOutput.toJson(["open", "close", "pause"]), displayed: false)
 	def cmds = zigbee.command(0x0004, 0x04)
 	cmds.each { sendHubCommand(new physicalgraph.device.HubAction(it)) }
