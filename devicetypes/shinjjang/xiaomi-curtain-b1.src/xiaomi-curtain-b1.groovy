@@ -16,7 +16,7 @@ import physicalgraph.zigbee.clusters.iaszone.ZoneStatus
 import groovy.json.JsonOutput
 
 metadata {
-	definition(name: "Xiaomi Curtain B1", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind", vid: "generic-shade") {
+	definition(name: "Xiaomi Curtain B1", namespace: "ShinJjang", author: "ShinJjang", ocfDeviceType: "oic.d.blind", vid: "generic-shade-3") {
 		capability "Window Shade"
 //		capability "Window Shade Preset"
 		capability "Switch Level"
